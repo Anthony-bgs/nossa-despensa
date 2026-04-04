@@ -1,0 +1,84 @@
+import { StatusProduto, CategoriasProduto, GrandezasProduto } from '../helpers/produto.enum.js';
+import model from '../models/produto.model.js';
+import loteService from './lote.service.js';
+
+class ProdutoService {
+  //#region PRODUTOS
+  // Criar novo produto
+  async criarProduto(dados) {
+    const novoProduto = new model({
+      ...dados,
+      categoria: CategoriasProduto[dados.categoria],
+      grandeza: GrandezasProduto[dados.grandeza]
+    });
+    return await novoProduto.save();
+  }
+  // Listar todos os produtos
+  async listarProdutos() {
+    return await model.find().select("nome categoria grandeza status estoqueTotal images");
+  }
+  // Listar produto por ID
+  async listarProdutoPorId(id) {
+    return await model.findById(id);
+  }
+  // Atualizar produto
+  async atualizarProduto(id, dados) {
+    return await model.findByIdAndUpdate(id, dados, { new: true });
+  }
+  // Remover produto
+  async removerProduto(id) {
+    await loteService.removerLotesPorProduto(id);
+    return await model.findByIdAndDelete(id);
+  }
+
+  //#endregion
+
+  //#region CONTROLE DE ESTOQUE
+
+  // Buscar produtos próximos do vencimento
+  async produtosProximosDoVencimento(dias) {
+    const lotesProximos = await loteService.lotesProximosDoVencimento(dias);
+
+    // Retornar produtos únicos
+    const produtosIds = [...new Set(lotesProximos.map(l => l.produto._id.toString()))];
+    return await model.find({ _id: { $in: produtosIds }, status: StatusProduto.EM_ESTOQUE });
+  }
+
+  // Buscar produtos em falta
+  async produtosEmFalta() {
+    return await model.find({ status: StatusProduto.EM_FALTA });
+  }
+
+  // Buscar produtos pela categoria
+  async buscaPorCategoria(categoria) {
+    return await model.find({ categoria: CategoriasProduto[String(categoria).toUpperCase()] });
+  }
+
+  //#endregion
+
+  async ajusteGlobal() {
+    try {
+
+      const produtos = await model.find();
+      for (const produto of produtos) {
+
+        await model.findByIdAndUpdate(produto._id, { categoria: produto.categoria.toUpperCase() });
+      }
+
+
+      return { message: 'Ajuste global realizado com sucesso' };
+    } catch (error) {
+      throw new Error(error, { cause: 500 });
+    }
+  }
+}
+
+async function _buscarProdutoPorId(id) {
+  const produto = await model.findById(id);
+  if (!produto) {
+    throw new Error('Produto não encontrado', { cause: 404 });
+  }
+  return produto;
+}
+
+export default new ProdutoService();

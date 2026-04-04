@@ -1,0 +1,20 @@
+{
+  "name": "nossa-depensa",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "migrate": "node migrate.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "mongodb": "^7.1.1",
+    "mongoose": "^9.3.3",
+    "mongoose-lean-virtuals": "^2.1.0",
+    "multer": "^2.1.1",
+    "sharp": "^0.34.5",
+    "uuid": "^13.0.0"
+  }
+}
