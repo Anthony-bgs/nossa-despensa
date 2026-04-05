@@ -32,3 +32,11 @@ export const GrandezasProduto = Object.freeze({
   UN: 'UN',
   PACOTE: 'PACOTE'
 });
+
+export const LocalizacaoProduto = Object.freeze({
+  GELADEIRA: 'GELADEIRA',
+  BANHEIRO: 'BANHEIRO',
+  OUTRO: 'OUTRO',
+  ARMARIO_DA_PIA: 'ARMARIO_DA_PIA',
+  GUARDA_ROUPA_DA_COZINHA: 'GUARDA_ROUPA_DA_COZINHA',
+});
