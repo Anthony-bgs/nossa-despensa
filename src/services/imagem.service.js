@@ -33,7 +33,8 @@ class ImagemService {
           .toFile(outputPath);
     
         const relativePath = path.join('uploads', 'produtos', produtoId.toString(), filename).replace(/\\/g, '/');
-        const url = `${process.env.APP_URL || ''}/${relativePath}`;
+        //const url = `${process.env.APP_URL || ''}/${relativePath}`;
+        const url = relativePath;
     
         const imagem = await model.create({
           produto: produtoId,
@@ -60,7 +61,7 @@ class ImagemService {
     
       async removerImagem(produtoId, imagemId) {
         const imagem = await model.findById(imagemId);
-        if (!imagem || imagem.produto.toString() !== produtoId.toString()) {
+        if (!imagem || imagem.produto.toString() !== produtoId) {
           throw new Error('Imagem não encontrada', { cause: 404 });
         }
     
