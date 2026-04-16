@@ -6,6 +6,7 @@ const produtoSchema = new mongoose.Schema({
   marca: { type: String, required: false },
   categoria:  { type: String, required:true, enum: Object.values(CategoriasProduto) },
   grandeza: { type: String, required:true, enum: Object.values(GrandezasProduto) },
+  tamanhoPadrao: { type: Number, required: true },
   codigoBarras: { type: String, required: false, unique: true },
   localArmazenamento: { type: String, default: LocalizacaoProduto.OUTRO, enum: Object.values(LocalizacaoProduto) },
   status: { type: String, default: StatusProduto.EM_FALTA, enum: Object.values(StatusProduto) },
