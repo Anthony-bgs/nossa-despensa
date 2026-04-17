@@ -5,7 +5,6 @@ import path from 'path';
 import produtoRoutes from './routes/produto.route.js';
 import loteRoutes from './routes/lote.route.js';
 import imagemRoutes from './routes/imagem.route.js';
-import despensaRoutes from './routes/despensa.route.js';
 import connectDB from './config/db.js';
 connectDB();
 
@@ -27,6 +26,5 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/produtos', produtoRoutes);
 app.use('/produtos', loteRoutes);
 app.use('/imagens', imagemRoutes);
-app.use('/despensa', despensaRoutes);
 
 export default app;

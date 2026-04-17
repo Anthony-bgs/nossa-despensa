@@ -8,22 +8,31 @@ class ProdutoService {
   async criarProduto(dados) {
     const novoProduto = new model({
       ...dados,
+      nome: dados.nome.toLowerCase(),
+      marca: dados.marca.toLowerCase(),
       categoria: CategoriasProduto[dados.categoria],
       grandeza: GrandezasProduto[dados.grandeza]
     });
     return await novoProduto.save();
   }
   // Listar todos os produtos
-  async listarProdutos() {
-    return await model.find().select("nome marca categoria grandeza status estoqueTotal images").populate('images', 'url');
+  async listarProdutos(filtro) {
+    let letra=filtro.nome
+    if(filtro.nome) {
+      return await model.find({ nome: { $regex: letra, $options: 'i' } }).sort({ nome: 1 }).select("nome marca categoria grandeza status estoqueTotal images").populate('images', 'url');
+    }
+
+    return await model.find(...filtro).sort({ nome: 1 }).select("nome marca categoria grandeza status estoqueTotal images").populate('images', 'url');
   }
   // Listar produto por ID
   async listarProdutoPorId(id) {
     return await model.findById(id).populate('lotes');
   }
   // Atualizar produto
-  async atualizarProduto(id, dados) {
-    return await model.findByIdAndUpdate(id, dados, { new: true });
+  async atualizarProduto(id, dados){
+    if (dados.nome) dados.nome = dados.nome.toLowerCase();
+    if (dados.marca) dados.marca = dados.marca.toLowerCase();
+    return await model.findByIdAndUpdate(id, dados, { returnDocument: 'after' });
   }
   // Remover produto
   async removerProduto(id) {
