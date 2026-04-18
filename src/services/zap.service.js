@@ -54,9 +54,13 @@ class ZapService {
         }
 
         const linhas = produtos.map((produto) => {
-            const nome = produto?.nome || "Sem nome";
-            const estoque = produto?.estoqueTotal ?? 0;
-            return `- ${nome} (estoque: ${estoque})`;
+            console.log("Produto:", produto);
+            const nome = produto?.produto.nome || "Sem nome";
+            const quantidade = produto?.quantidade ?? 0;
+            const validade = produto?.validade || "sem validade";
+            const status = produto?.produto.status || "sem status";
+            const localarmazenamento = produto?.produto.localArmazenamento || "sem local de armazenamento";
+            return `- ${nome} (quantidade: ${quantidade}, validade: ${validade.toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' })}, status: ${status}, local: ${localarmazenamento})`;
         });
 
         return ["Lista da despensa:", ...linhas].join("\n");

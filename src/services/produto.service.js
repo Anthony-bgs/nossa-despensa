@@ -21,6 +21,7 @@ class ProdutoService {
   async listarProdutoPorId(id) {
     return await model.findById(id);
   }
+
   // Atualizar produto
   async atualizarProduto(id, dados) {
     return await model.findByIdAndUpdate(id, dados, { new: true });
