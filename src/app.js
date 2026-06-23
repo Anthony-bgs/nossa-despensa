@@ -6,6 +6,7 @@ import produtoRoutes from './routes/produto.route.js';
 import loteRoutes from './routes/lote.route.js';
 import imagemRoutes from './routes/imagem.route.js';
 import connectDB from './config/db.js';
+import zapRoutes from './routes/zap.route.js';
 connectDB();
 
 const app = express();
@@ -26,5 +27,5 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/produtos', produtoRoutes);
 app.use('/produtos', loteRoutes);
 app.use('/imagens', imagemRoutes);
-
+app.use('/zap', zapRoutes);
 export default app;

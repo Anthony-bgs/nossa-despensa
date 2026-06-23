@@ -28,6 +28,7 @@ class ProdutoService {
   async listarProdutoPorId(id) {
     return await model.findById(id).populate('lotes');
   }
+
   // Atualizar produto
   async atualizarProduto(id, dados){
     if (dados.nome) dados.nome = dados.nome.toLowerCase();
