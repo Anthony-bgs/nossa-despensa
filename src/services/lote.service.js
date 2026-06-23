@@ -1,6 +1,7 @@
 import { StatusProduto, StatusLote } from '../helpers/produto.enum.js';
 import loteModel from '../models/lote.model.js';
 import produtoModel from '../models/produto.model.js';
+import {ConstantesHelper} from '../helpers/constantes.helper.js';
 
 class LoteService {
 
@@ -15,8 +16,12 @@ class LoteService {
       produto: produtoId,
     });
 
-    await controlarEstoqueTotal(lote);
-    return {mensagem: 'Lote adicionado com sucesso'};
+
+    produto.lotes.push(lote._id);
+    produto.status = StatusProduto.EM_ESTOQUE;
+    await produto.save();
+
+    return lote;
   }
 
   // Listar os lotes de um produto específico
@@ -115,7 +120,12 @@ class LoteService {
   async removerLotesPorProduto(produtoId) {
     await loteModel.deleteMany({ produto: produtoId });
   }
-
+  async listarVencimento() {
+    let datamaxima = new Date();
+    datamaxima.setDate(datamaxima.getDate() + ConstantesHelper.FILTRO_DATA);
+    let data = new Date();
+    return await loteModel.find({ validade: { $lte: datamaxima}, quantidade: { $gt: 0 } }).populate('produto').sort({ validade: 1 });
+  }
 }
 // Método auxiliar
 async function _buscarProdutoPorId(id) {

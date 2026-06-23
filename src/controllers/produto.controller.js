@@ -61,8 +61,6 @@ class ProdutoController {
     res.json(produtos);
   }
   //#endregion
+
 }
-
-
-
 export default new ProdutoController();
