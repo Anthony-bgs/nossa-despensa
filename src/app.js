@@ -5,7 +5,6 @@ import path from 'path';
 import produtoRoutes from './routes/produto.route.js';
 import loteRoutes from './routes/lote.route.js';
 import imagemRoutes from './routes/imagem.route.js';
-import despensaRoutes from './routes/despensa.route.js';
 import connectDB from './config/db.js';
 import zapRoutes from './routes/zap.route.js';
 connectDB();

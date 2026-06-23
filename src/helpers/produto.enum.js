@@ -25,12 +25,15 @@ export const CategoriasProduto = Object.freeze({
 });
 
 export const GrandezasProduto = Object.freeze({
+  UNIDADE: 'UNIDADE',
+  GRAMA: 'GRAMA',
   KG: 'KG',
-  G: 'G',
-  L: 'L',
-  ML: 'ML',
-  UN: 'UN',
-  PACOTE: 'PACOTE'
+  LITRO: 'LITRO',
+  PACOTE: 'PACOTE',
+  CAIXA: 'CAIXA',
+  FRASCO: 'FRASCO',
+  SACHÊ: 'SACHÊ',
+  OUTROS: 'OUTROS'
 });
 
 export const LocalizacaoProduto = Object.freeze({
