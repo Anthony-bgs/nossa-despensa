@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import ProdutoModel from './src/models/produto.model.js';
 import LoteModel from './src/models/lote.model.js';
-import { StatusProduto } from './src/helpers/produto.enum.js';
+import { LocalizacaoProduto, StatusProduto } from './src/helpers/produto.enum.js';
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -14,52 +14,25 @@ const migrateLotes = async () => {
         console.log('✅ Conectado ao MongoDB');
 
         // Buscar produtos que têm lotes embedded (array de objetos)
-        const produtosComLotesEmbedded = await ProdutoModel.find({
-            lotes: { $exists: true, $type: 'array', $ne: [] },
-            'lotes.0': { $exists: true }
+        const produtos = await ProdutoModel.find({
+            localArmazenamento: /banheiro/i
         });
 
-        console.log(`📊 Encontrados ${produtosComLotesEmbedded.length} produtos com lotes embedded`);
+        console.log(`📊 Encontrados ${produtos.length} produtos a serem alterados`);
 
         let totalLotesMigrados = 0;
 
-        for (const produto of produtosComLotesEmbedded) {
-            const lotesIds = [];
-
-            for (const loteData of produto.lotes) {
-                // Criar lote separado
-                const newLote = {
-                    produto: produto._id,
-                    quantidade: loteData.quantidade,
-                    validade: loteData.validade,
-                    numero: loteData.numero,
-                    status: loteData.status
-                }
-                const lote = await LoteModel.create(newLote);
-                lotesIds.push(lote._id);
-                totalLotesMigrados++;
-            }
-
+        for (const produto of produtos) {
+            
             // Atualizar produto para usar referências
             await ProdutoModel.findByIdAndUpdate(produto._id, {
-                lotes: lotesIds,
-                status: produto.lotes.length > 0 ? StatusProduto.EM_ESTOQUE : StatusProduto.EM_FALTA
+                localArmazenamento: LocalizacaoProduto.BANHEIRO,
             });
 
-            console.log(`✅ Produto ${produto.nome}: ${produto.lotes.length} lotes migrados`);
+            console.log(`✅ Produto ${produto.nome}: atualizados`);
         }
 
-        // Adicionar campo images: [] se não existir
-        const produtosSemImages = await ProdutoModel.countDocuments({ images: { $exists: false } });
-        if (produtosSemImages > 0) {
-            await ProdutoModel.updateMany(
-                { images: { $exists: false } },
-                { $set: { images: [] } }
-            );
-            console.log(`✅ Adicionado campo 'images' a ${produtosSemImages} produtos`);
-        }
-
-        console.log(`🎉 Migração concluída: ${totalLotesMigrados} lotes migrados de ${produtosComLotesEmbedded.length} produtos`);
+        console.log(`🎉 Migração concluída: ${totalLotesMigrados} lotes migrados de ${produtos.length} produtos`);
 
         // Desconectar
         await mongoose.disconnect();

@@ -15,11 +15,11 @@ class ProdutoService {
   }
   // Listar todos os produtos
   async listarProdutos() {
-    return await model.find().select("nome categoria grandeza status estoqueTotal images");
+    return await model.find().select("nome marca categoria grandeza status estoqueTotal images").populate('images', 'url');
   }
   // Listar produto por ID
   async listarProdutoPorId(id) {
-    return await model.findById(id);
+    return await model.findById(id).populate('lotes');
   }
 
   // Atualizar produto
@@ -54,32 +54,19 @@ class ProdutoService {
   async buscaPorCategoria(categoria) {
     return await model.find({ categoria: CategoriasProduto[String(categoria).toUpperCase()] });
   }
-
+  
   //#endregion
-
-  async ajusteGlobal() {
-    try {
-
-      const produtos = await model.find();
-      for (const produto of produtos) {
-
-        await model.findByIdAndUpdate(produto._id, { categoria: produto.categoria.toUpperCase() });
-      }
-
-
-      return { message: 'Ajuste global realizado com sucesso' };
-    } catch (error) {
-      throw new Error(error, { cause: 500 });
+  
+  //#region MÉTODOS AUXILIARES EXTERNOS
+  async _buscarProdutoPorId(id) {
+    const produto = await model.findById(id);
+    if (!produto) {
+      throw new Error('Produto não encontrado', { cause: 404 });
     }
+    return produto;
   }
+  //#endregion
 }
 
-async function _buscarProdutoPorId(id) {
-  const produto = await model.findById(id);
-  if (!produto) {
-    throw new Error('Produto não encontrado', { cause: 404 });
-  }
-  return produto;
-}
 
 export default new ProdutoService();

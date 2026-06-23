@@ -30,9 +30,9 @@ class LoteService {
     return await loteModel.find({ produto: produtoId }).sort({ validade: 1 });
   }
 
-  // Listar lote por número
-  async listarLotePorNumero(loteNumero) {
-    const lote = await loteModel.findOne({ numero: loteNumero }).populate('produto');
+  // Listar lote por ID
+  async listarLotePorId(loteId) {
+    const lote = await loteModel.findById(loteId).populate('produto');
     if (!lote) {
       throw new Error('Lote não encontrado', { cause: 404 });
     }
@@ -51,6 +51,7 @@ class LoteService {
   // Atualizar lote específico
   async atualizarLote(loteId, dadosLote) {
     const lote = await loteModel.findById(loteId);
+
     if (!lote) {
       throw new Error('Lote não encontrado', { cause: 404 });
     }
@@ -58,16 +59,8 @@ class LoteService {
     Object.assign(lote, dadosLote);
     await lote.save();
 
-    // Atualizar status do produto se necessário
-    if (dadosLote.quantidade === 0) {
-      const outrosLotes = await loteModel.countDocuments({
-        produto: lote.produto,
-        quantidade: { $gt: 0 }
-      });
-      if (outrosLotes === 0) {
-        await produtoModel.findByIdAndUpdate(lote.produto, { status: StatusProduto.EM_FALTA });
-      }
-    }
+    // Verificar se o produto ainda tem estoque após a atualização do lote (considerando a quantidade do lote atualizado)
+    await controlarEstoqueTotal(lote);
 
     return lote;
   }
@@ -82,11 +75,8 @@ class LoteService {
     await loteModel.findByIdAndDelete(loteId);
     await produtoModel.findByIdAndUpdate(lote.produto, { $pull: { lotes: loteId } });
 
-    // Verificar se ainda há lotes restantes
-    const lotesRestantes = await loteModel.countDocuments({ produto: lote.produto });
-    if (lotesRestantes === 0) {
-      await produtoModel.findByIdAndUpdate(lote.produto, { status: StatusProduto.EM_FALTA });
-    }
+    await controlarEstoqueTotal(lote);
+    
 
     return { mensagem: 'Lote removido com sucesso' };
   }
@@ -125,15 +115,7 @@ class LoteService {
     }).sort({ validade: 1 });
   }
 
-  // Calcular estoque total de um produto
-  async calcularEstoqueTotal(produtoId) {
-    const result = await loteModel.aggregate([
-      { $match: { produto: produtoModel.Types.ObjectId(produtoId) } },
-      { $group: { _id: null, total: { $sum: '$quantidade' } } }
-    ]);
 
-    return result.length > 0 ? result[0].total : 0;
-  }
 
   async removerLotesPorProduto(produtoId) {
     await loteModel.deleteMany({ produto: produtoId });
@@ -152,6 +134,27 @@ async function _buscarProdutoPorId(id) {
     throw new Error('Produto não encontrado', { cause: 404 });
   }
   return produto;
+}
+
+// Calcular estoque total de um produto
+async function controlarEstoqueTotal(lote) {
+  const outrosLotes = await loteModel.countDocuments({
+    produto: lote.produto,
+    quantidade: { $gt: 0 }
+  });
+
+
+  if (outrosLotes === 0) {
+    await produtoModel.findByIdAndUpdate(lote.produto, { status: StatusProduto.EM_FALTA, estoqueTotal: 0 });
+  } else {
+    const result = await loteModel.aggregate([
+      { $match: { produto: lote.produto } },
+      { $group: { _id: null, total: { $sum: '$quantidade' } } }
+    ]);
+    const estoqueTotal = result.length > 0 ? result[0].total : 0;
+
+    await produtoModel.findByIdAndUpdate(lote.produto, { status: StatusProduto.EM_ESTOQUE, estoqueTotal: estoqueTotal });
+  }
 }
 
 export default new LoteService();

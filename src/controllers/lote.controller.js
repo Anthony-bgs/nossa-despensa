@@ -35,9 +35,9 @@ class LoteController {
     }
   }
 
-  async listarLotePorNumero(req, res) {
+  async listarLotePorId(req, res) {
     try {
-      const lote = await loteService.listarLotePorNumero(req.params.loteNumero);
+      const lote = await loteService.listarLotePorId(req.params.loteId);
       res.json(lote);
     } catch (error) {
       return tratarErro(res, error);
