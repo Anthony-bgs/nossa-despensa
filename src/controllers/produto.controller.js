@@ -4,7 +4,6 @@ import produtoService from "../services/produto.service.js";
 class ProdutoController {
 
   //#region PRODUTOS
-
   // Criar produto
   async adicionarProduto(req, res) {
     try {
@@ -16,7 +15,7 @@ class ProdutoController {
   }
   // Listar produtos
   async listarProdutos(req, res) {
-    const produtos = await produtoService.listarProdutos();
+    const produtos = await produtoService.listarProdutos(req.query);
     res.json(produtos);
   }
   // Listar produto por ID
