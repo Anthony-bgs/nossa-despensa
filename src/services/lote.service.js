@@ -111,7 +111,7 @@ class LoteService {
   async buscarLotesPorProdutoEStatus(produtoId, status) {
     return await loteModel.find({
       produto: produtoId,
-      status: status
+      ...status
     }).sort({ validade: 1 });
   }
 
