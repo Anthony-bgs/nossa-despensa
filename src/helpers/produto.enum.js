@@ -1,8 +1,12 @@
+
 export const StatusLote = Object.freeze({
+  ABERTO:"ABERTO",
+  FECHADO: "FECHADO"
+});
+
+export const StatusLoteValidade = Object.freeze({
   VENCENDO: 'VENCENDO',
   VENCIDO: 'VENCIDO',
-  ABERTO: 'ABERTO',
-  FECHADO: 'FECHADO',
   INDEFINIDO: 'INDEFINIDO'
 });
 
