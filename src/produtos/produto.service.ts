@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { Categoria, Grandeza, Produto, Status } from './produto.interface';
+import { Categoria, Grandeza, LocalArmazenamento, Produto, Status } from './produto.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { NovoProdutoDTO } from './produto.dto';
@@ -20,7 +20,8 @@ export class ProdutoService {
       nome: dados.nome.toLowerCase(),
       marca: dados.marca.toLowerCase(),
       categoria: Categoria[dados.categoria],
-      grandeza: Grandeza[dados.grandeza]
+      grandeza: Grandeza[dados.grandeza],
+      localArmazenamento: LocalArmazenamento[dados.localArmazenamento],
     });
     return novoProduto.save();
   }
@@ -28,9 +29,10 @@ export class ProdutoService {
   async buscarTodosProdutos(filtro?: Partial<Produto>): Promise<Produto[]> {
     let letra = filtro?.nome
     if (filtro?.nome) {
-      return await this.produtoModel.find({ nome: { $regex: letra, $options: 'i' } }).sort({ nome: 1 }).select("nome marca categoria grandeza status estoqueTotal images")
+      return await this.produtoModel.find({ nome: { $regex: letra, $options: 'i' } }).sort({ nome: 1 }).select("nome marca categoria grandeza status estoqueTotal localArmazenamento images")
     }
-    return await this.produtoModel.find({ ...filtro }).sort({ nome: 1 }).select("nome marca categoria grandeza status estoqueTotal images")
+    return await this.produtoModel.find({ ...filtro }).sort({ nome: 1 })
+    // .select("nome marca categoria grandeza status estoqueTotal localArmazenamento images")
   }
 
   async buscarProdutoPorId(id: string): Promise<Produto | null> {
