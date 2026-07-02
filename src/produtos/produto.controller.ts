@@ -1,14 +1,14 @@
-import { BadRequestException, Body, Controller, Get, HttpStatus, Logger, Post, Query, Res, UseFilters } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpStatus, Logger, NotFoundException, Param, Post, Put, Query, Res, UseFilters } from '@nestjs/common';
 import { ProdutoService } from './produto.service';
 import type { Produto } from './produto.interface';
 import type { Response } from 'express';
 import type mongoose from 'mongoose';
-import type { NovoProdutoDTO } from './produto.dto';
+import type { AtualizarProdutoDTO, NovoProdutoDTO } from './produto.dto';
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
 
 @Controller('produtos')
 export class ProdutoController {
-  constructor(private readonly produtoService: ProdutoService) {}
+  constructor(private readonly produtoService: ProdutoService) { }
 
   @Post('/')
   @UseFilters(new HttpExceptionFilter())
@@ -28,6 +28,40 @@ export class ProdutoController {
       return this.produtoService.buscarTodosProdutos(filtro);
     } catch (error: mongoose.Error | any) {
       Logger.error('Erro ao buscar produtos:', error);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Get('/:id')
+  async buscarProdutoPorId(@Param('id') id: string): Promise<Produto | string> {
+    const produto = await this.produtoService.buscarProdutoPorId(id);
+    if (!produto) {
+      throw new NotFoundException('Produto nao encontrado');
+    }
+    return produto;
+  }
+
+  @Put('/:id')
+  async atualizarProduto(@Body() dados: AtualizarProdutoDTO, @Param('id') id: string): Promise<Produto | null> {
+    try {
+      const produtoAtualizado = await this.produtoService.atualizarProduto(id, dados);
+      return produtoAtualizado;
+    } catch (error: mongoose.Error | any) {
+      Logger.error('Erro ao atualizar produto:', error);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Delete('/:id')
+  async deletarProduto(@Param('id') id: string): Promise<Produto | string> {
+    try {
+      const produtoDeletado = await this.produtoService.deletarProduto(id);
+      if (!produtoDeletado) {
+        throw new NotFoundException('Produto nao encontrado');
+      }
+      return "Produto deletado com sucesso";
+    } catch (error: mongoose.Error | any) {
+      Logger.error('Erro ao deletar produto:', error);
       throw new BadRequestException(error.message);
     }
   }

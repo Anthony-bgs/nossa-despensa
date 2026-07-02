@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Categoria, Grandeza, LocalArmazenamento, Produto, Status } from './produto.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { NovoProdutoDTO } from './produto.dto';
+import { AtualizarProdutoDTO, NovoProdutoDTO } from './produto.dto';
 import { LoteService } from '../lotes/lote.service';
 import { Lote } from '../lotes/lote.interface';
 
@@ -36,11 +36,19 @@ export class ProdutoService {
   }
 
   async buscarProdutoPorId(id: string): Promise<Produto | null> {
-    return await this.produtoModel.findById(id).populate("lotes", "validade quantidade status statusValidade");;
+    return await this.produtoModel.findById(id).populate("lotes", "validade quantidade status statusValidade");
   }
 
   async atualizarLote(_id: string, lote: Lote, estoqueTotal: number): Promise<void> {
     const status = estoqueTotal > 0 ? Status.EM_ESTOQUE : Status.EM_FALTA;
     await this.produtoModel.findByIdAndUpdate(_id, { $push: { lotes: lote._id }, $set: { estoqueTotal, status } }, { new: true });
+  }
+  async atualizarProduto(_id: string, dados: AtualizarProdutoDTO): Promise<Produto | null> {
+    if (dados.nome) dados.nome = dados.nome.toLowerCase();
+    if (dados.marca) dados.marca = dados.marca.toLowerCase();
+    return await this.produtoModel.findOneAndUpdate({ _id }, { ...dados })
+  }
+  async deletarProduto(_id: string): Promise<Produto | null> {
+    return await this.produtoModel.findByIdAndDelete(_id)
   }
 }

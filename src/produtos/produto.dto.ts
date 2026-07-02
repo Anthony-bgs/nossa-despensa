@@ -15,3 +15,14 @@ export interface NovoProdutoDTO {
     lotes?: Lote[];
     images?: Imagem[];
 }
+
+export interface AtualizarProdutoDTO { 
+    nome?: string;
+    marca?: string;
+    categoria?: Categoria;
+    grandeza?: Grandeza;
+    tamanhoPadrao?: number;
+    codigoBarras?: string;
+    localArmazenamento?: LocalArmazenamento;
+    images?: Imagem[];
+}
