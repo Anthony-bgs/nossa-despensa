@@ -3,7 +3,7 @@ import { ProdutoService } from './produto.service';
 import type { Produto } from './produto.interface';
 import type { Response } from 'express';
 import type mongoose from 'mongoose';
-import type { AtualizarProdutoDTO, NovoProdutoDTO } from './produto.dto';
+import type { AtualizarProdutoDTO, FiltroDTO, NovoProdutoDTO } from './produto.dto';
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
 
 @Controller('produtos')
@@ -23,7 +23,7 @@ export class ProdutoController {
   }
 
   @Get('/')
-  async buscarTodosProdutos(@Query() filtro?: Partial<Produto>): Promise<Produto[]> {
+  async buscarTodosProdutos(@Query() filtro?: Partial<FiltroDTO>): Promise<Produto[]> {
     try {
       return this.produtoService.buscarTodosProdutos(filtro);
     } catch (error: mongoose.Error | any) {

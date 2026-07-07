@@ -26,3 +26,10 @@ export interface AtualizarProdutoDTO {
     localArmazenamento?: LocalArmazenamento;
     images?: Imagem[];
 }
+export interface FiltroDTO {
+    nome?: string;
+    categoria?: Categoria;
+    codigoBarras?: string;
+    filtroValidade?: number;  
+    localArmazenamento?: LocalArmazenamento;                                                     
+}

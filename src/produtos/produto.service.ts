@@ -1,8 +1,8 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Categoria, Grandeza, LocalArmazenamento, Produto, Status } from './produto.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { AtualizarProdutoDTO, NovoProdutoDTO } from './produto.dto';
+import { _QueryFilter, Model } from 'mongoose';
+import { AtualizarProdutoDTO, FiltroDTO, NovoProdutoDTO } from './produto.dto';
 import { LoteService } from '../lotes/lote.service';
 import { Lote } from '../lotes/lote.interface';
 
@@ -26,12 +26,28 @@ export class ProdutoService {
     return novoProduto.save();
   }
 
-  async buscarTodosProdutos(filtro?: Partial<Produto>): Promise<Produto[]> {
-    let letra = filtro?.nome
+  async buscarTodosProdutos(filtro?: Partial<FiltroDTO>): Promise<Produto[]> {
+
+    const filtroProduto: _QueryFilter<Produto> = { ...filtro };
+
     if (filtro?.nome) {
-      return await this.produtoModel.find({ nome: { $regex: letra, $options: 'i' } }).sort({ nome: 1 }).select("nome marca categoria grandeza status estoqueTotal localArmazenamento images")
+      let letraRegex = new RegExp(filtro.nome, "i");
+      filtroProduto.nome = letraRegex;
     }
-    return await this.produtoModel.find({ ...filtro }).sort({ nome: 1 })
+
+    if (filtro?.filtroValidade) {
+      let dataHoje = new Date();
+      let dataFinal = new Date();
+      let filtroValidade = filtro.filtroValidade;
+      dataFinal.setDate(dataHoje.getDate() + Number(filtroValidade));
+      delete filtroProduto.filtroValidade;
+      return (await this.produtoModel.find(filtroProduto).sort({ nome: 1 }).populate("lotes", "validade")).filter((produto) => {
+        return produto.lotes.some((lote) => lote.validade <= dataFinal);
+      })
+    } else {
+      delete filtroProduto.filtroValidade;
+      return await this.produtoModel.find(filtroProduto).sort({ nome: 1 }).populate("lotes", "validade");
+    }
     // .select("nome marca categoria grandeza status estoqueTotal localArmazenamento images")
   }
 
