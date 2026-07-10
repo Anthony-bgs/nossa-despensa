@@ -1,3 +1,4 @@
+import { PaginacaoDTO } from "../Helper/paginacaodto";
 import { Imagem } from "../imagens/imagem.interface";
 import { Lote } from "../lotes/lote.interface";
 import { Categoria, Grandeza, LocalArmazenamento } from "./produto.interface";
@@ -31,5 +32,5 @@ export interface FiltroDTO {
     categoria?: Categoria;
     codigoBarras?: string;
     filtroValidade?: number;  
-    localArmazenamento?: LocalArmazenamento;                                                     
-}
+    localArmazenamento?: LocalArmazenamento;
+    }

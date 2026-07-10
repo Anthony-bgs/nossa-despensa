@@ -5,6 +5,7 @@ import type { Response } from 'express';
 import type mongoose from 'mongoose';
 import type { AtualizarProdutoDTO, FiltroDTO, NovoProdutoDTO } from './produto.dto';
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
+import type { PaginacaoDTO } from '../Helper/paginacaodto';
 
 @Controller('produtos')
 export class ProdutoController {
@@ -23,9 +24,16 @@ export class ProdutoController {
   }
 
   @Get('/')
-  async buscarTodosProdutos(@Query() filtro?: Partial<FiltroDTO>): Promise<Produto[]> {
+  async buscarTodosProdutos(@Query() query?: Record<string, string>): Promise<Produto[]> {
     try {
-      return this.produtoService.buscarTodosProdutos(filtro);
+      const { limite, pule, ...filtro } = query ?? {};
+
+      const paginacao: PaginacaoDTO = {
+        limite: limite !== undefined ? Number(limite) : undefined,
+        pule: pule !== undefined ? Number(pule) : undefined,
+      };
+
+      return this.produtoService.buscarTodosProdutos(filtro as Partial<FiltroDTO>, paginacao);
     } catch (error: mongoose.Error | any) {
       Logger.error('Erro ao buscar produtos:', error);
       throw new BadRequestException(error.message);

@@ -5,6 +5,8 @@ import { _QueryFilter, Model } from 'mongoose';
 import { AtualizarProdutoDTO, FiltroDTO, NovoProdutoDTO } from './produto.dto';
 import { LoteService } from '../lotes/lote.service';
 import { Lote } from '../lotes/lote.interface';
+import { PaginacaoDTO } from '../Helper/paginacaodto';
+import { TAMANHO_PAGINA_PADRAO } from '../Helper/constantes';
 
 @Injectable()
 export class ProdutoService {
@@ -26,10 +28,10 @@ export class ProdutoService {
     return novoProduto.save();
   }
 
-  async buscarTodosProdutos(filtro?: Partial<FiltroDTO>): Promise<Produto[]> {
-
+  async buscarTodosProdutos(filtro?: Partial<FiltroDTO>, paginacao?: PaginacaoDTO): Promise<Produto[]> {
+    
     const filtroProduto: _QueryFilter<Produto> = { ...filtro };
-
+   
     if (filtro?.nome) {
       let letraRegex = new RegExp(filtro.nome, "i");
       filtroProduto.nome = letraRegex;
@@ -41,12 +43,13 @@ export class ProdutoService {
       let filtroValidade = filtro.filtroValidade;
       dataFinal.setDate(dataHoje.getDate() + Number(filtroValidade));
       delete filtroProduto.filtroValidade;
-      return (await this.produtoModel.find(filtroProduto).sort({ nome: 1 }).populate("lotes", "validade")).filter((produto) => {
+      return (await this.produtoModel.find(filtroProduto, null, {  skip: paginacao?.pule ?? 0, limit: paginacao?.limite ?? TAMANHO_PAGINA_PADRAO}
+      ).sort({ nome: 1 }).populate("lotes", "validade")).filter((produto) => {
         return produto.lotes.some((lote) => lote.validade <= dataFinal);
       })
     } else {
       delete filtroProduto.filtroValidade;
-      return await this.produtoModel.find(filtroProduto).sort({ nome: 1 }).populate("lotes", "validade");
+      return await this.produtoModel.find(filtroProduto,null, {  skip: paginacao?.pule ?? 0, limit: paginacao?.limite ?? TAMANHO_PAGINA_PADRAO}).sort({ nome: 1 }).populate("lotes", "validade");
     }
     // .select("nome marca categoria grandeza status estoqueTotal localArmazenamento images")
   }
