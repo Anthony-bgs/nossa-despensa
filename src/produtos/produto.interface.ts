@@ -44,3 +44,10 @@ export enum Status {
     EM_FALTA = 'em falta',
     EM_ESTOQUE = 'em estoque',
 }
+
+export interface ListaDeProdutosInterface {
+    produtos: Produto[];
+    paginacao: {
+        total: number;
+    };
+}
