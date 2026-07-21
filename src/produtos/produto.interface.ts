@@ -22,7 +22,8 @@ export enum Categoria {
     BEBIDA = 'bebida',
     HIGIENE = 'higiene',
     LIMPEZA = 'limpeza',
-    OUTROS = 'outros'
+    OUTROS = 'outros',
+    AUTO_CUIDADO = 'auto_cuidado',
 }
 
 export enum Grandeza {
