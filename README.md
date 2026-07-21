@@ -1,255 +1,98 @@
-# Nossa Despensa - API Backend
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+</p>
 
-API REST para gerenciamento de despensa doméstica, permitindo controle de produtos, lotes e imagens com armazenamento local.
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-## 🚀 Tecnologias
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-- **Node.js** com **ES Modules**
-- **Express.js** para API REST
-- **MongoDB** + **Mongoose** para persistência
-- **Multer** + **Sharp** para upload e processamento de imagens
-- **CORS** para acesso cross-origin
+## Description
 
-## 📦 Instalação e Execução
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-### Pré-requisitos
-- Node.js 18+
-- MongoDB (local ou Atlas)
+## Project setup
 
-### Instalação
 ```bash
-npm install
+$ npm install
 ```
 
-### Configuração
-Crie arquivo `.env` na raiz:
-```env
-APP_URL=http://localhost:5000
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/nossa-despensa
-```
+## Compile and run the project
 
-### Execução
 ```bash
-# Desenvolvimento
-npm run dev
+# development
+$ npm run start
 
-# Migração de dados (se necessário)
-npm run migrate
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
 ```
 
-## 📋 API Endpoints
+## Run tests
 
-### 🛒 Produtos
-
-#### CRUD Básico
-| Método | Endpoint | Descrição | Ciclo de Vida |
-|--------|----------|-----------|---------------|
-| `POST` | `/produtos` | Criar produto | → Validação → Criação no DB → Retorno |
-| `GET` | `/produtos` | Listar produtos | → Consulta DB → Retorno lista resumida |
-| `GET` | `/produtos/:id` | Buscar produto | → Busca por ID → Populate lotes/imagens → Retorno |
-| `PUT` | `/produtos/:id` | Atualizar produto | → Busca → Validação → Update → Retorno |
-| `DELETE` | `/produtos/:id` | Remover produto | → Busca → Remove lotes/imagens → Remove produto |
-
-#### Consultas Específicas
-| Método | Endpoint | Descrição | Ciclo de Vida |
-|--------|----------|-----------|---------------|
-| `GET` | `/produtos/status/proximos-do-vencimento?dias=7` | Produtos próximos vencimento | → Busca lotes → Filtra por data → Retorna produtos únicos |
-| `GET` | `/produtos/status/em-falta` | Produtos sem estoque | → Filtra produtos sem lotes ativos → Retorno |
-| `GET` | `/produtos/categoria/:categoria` | Produtos por categoria | → Busca por enum categoria → Retorno |
-
-### 📦 Lotes
-
-#### Gerenciamento de Lotes
-| Método | Endpoint | Descrição | Ciclo de Vida |
-|--------|----------|-----------|---------------|
-| `POST` | `/produtos/:produtoId/lotes` | Adicionar lote | → Valida produto → Cria lote → Adiciona ref no produto → Atualiza status produto |
-| `GET` | `/produtos/:produtoId/lotes` | Listar lotes do produto | → Busca produto → Retorna lotes ordenados por validade |
-| `GET` | `/lotes/:numero` | Buscar lote por número | → Busca por número único → Populate produto → Retorno |
-| `PUT` | `/lotes/:id` | Atualizar lote | → Busca lote → Update campos → Verifica status produto → Retorno |
-| `DELETE` | `/lotes/:id` | Remover lote | → Busca lote → Remove lote → Remove ref do produto → Atualiza status produto |
-| `PUT` | `/lotes/:id/status` | Alterar status lote | → Valida status → Update lote → Retorno |
-
-### 🖼️ Imagens
-
-#### Gerenciamento de Imagens
-| Método | Endpoint | Descrição | Ciclo de Vida |
-|--------|----------|-----------|---------------|
-| `POST` | `/imagens/produtos/:produtoId` | Upload imagem | → Recebe multipart → Valida tipo/tamanho → Processa com Sharp → Salva local → Cria registro DB → Adiciona ref no produto |
-| `GET` | `/imagens/produtos/:produtoId` | Listar imagens | → Busca produto → Retorna metadados imagens |
-| `DELETE` | `/imagens/produtos/:produtoId/:imagemId` | Remover imagem | → Busca imagem → Remove arquivo disco → Remove registro DB → Remove ref do produto |
-
-### 📁 Arquivos Estáticos
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET` | `/uploads/produtos/:produtoId/:filename` | Servir imagem | Acesso direto aos arquivos processados |
-
-## 🔄 Ciclo de Vida das Operações
-
-### 1. **Criação de Produto**
-```
-Requisição → controller.adicionarProduto → service.criarProduto → Validação campos → Criação MongoDB → Resposta 201
-```
-
-### 2. **Adição de Lote**
-```
-Requisição → controller.adicionarLote → service.adicionarLote → Validação produto existe → Validação dados lote →
-Criação lote DB → Adiciona referência no produto → Atualiza status produto (EM_ESTOQUE) → Resposta 201
-```
-
-### 3. **Upload de Imagem**
-```
-Requisição multipart → controller.adicionarImagem → service.adicionarImagem → Validação tipo/tamanho → Buffer na memória →
-Processamento Sharp (resize) → Salvamento disco local → Criação registro imagem DB → Adiciona referência no produto → Resposta 201
-```
-
-### 4. **Consulta com Relacionamentos**
-```
-Requisição → controller.listarProduto → service.listarProdutoPorId → Busca por ID → Populate lotes/imagens → Retorno JSON
-```
-
-### 5. **Atualização com Dependências**
-```
-Requisição → controller.atualizarLote → service.atualizarLote → Busca lote → Update campos → Verifica status produto → Resposta
-```
-
-### 6. **Remoção em Cascata**
-```
-Requisição → controller.removerProduto → service.removerProduto → Busca produto → Remove lotes/imagens → Remove produto → Resposta 204
-```
-
-## 📝 Exemplos de Uso
-
-### Criar Produto
 ```bash
-POST /produtos
-Content-Type: application/json
+# unit tests
+$ npm run test
 
-{
-  "nome": "Arroz Branco",
-  "marca": "Tio João",
-  "categoria": "graos",
-  "grandeza": "kg",
-  "codigoBarras": "789123456789"
-}
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
 ```
 
-### Adicionar Lote
+## Deployment
+
+When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+
+If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+
 ```bash
-POST /produtos/64f1a2b3c4d5e6f7g8h9i0j1/lotes
-Content-Type: application/json
-
-{
-  "quantidade": 5,
-  "validade": "2024-12-31",
-  "numero": "LT001"
-}
+$ npm install -g @nestjs/mau
+$ mau deploy
 ```
 
-### Upload Imagem
-```bash
-POST /imagens/produtos/64f1a2b3c4d5e6f7g8h9i0j1
-Content-Type: multipart/form-data
+With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
-# Campo: imagem (file)
-```
+## Resources
 
-### Consultar Produtos Próximos Vencimento
-```bash
-GET /produtos/status/proximos-do-vencimento?dias=7
-```
+Check out a few resources that may come in handy when working with NestJS:
 
-## 🏗️ Arquitetura
+- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
+- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
+- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
+- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
+- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
+- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
+- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
+- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
 
-```
-server.js
-├── src/app.js (middlewares + rotas)
-├── src/routes/
-│   ├── produto.route.js
-│   ├── lote.route.js
-│   └── imagem.route.js
-├── src/controllers/
-│   ├── produto.controller.js
-│   ├── lote.controller.js
-│   └── imagem.controller.js
-├── src/services/
-│   ├── produto.service.js
-│   ├── lote.service.js
-│   └── imagem.service.js
-├── src/models/
-│   ├── produto.model.js
-│   ├── lote.model.js
-│   └── imagem.model.js
-└── src/helpers/
-    ├── produto.enum.js
-    └── tratamentoErro.js
-```
+## Support
 
-## 🔧 Desenvolvimento
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-### Scripts Disponíveis
-```bash
-npm run dev      # Inicia servidor
-npm run migrate  # Executa migração de dados
-```
+## Stay in touch
 
-### Estrutura de Dados
+- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
 
-#### Produto
-```javascript
-{
-  nome: String,
-  marca: String,
-  categoria: Enum,
-  grandeza: Enum,
-  codigoBarras: String,
-  localArmazenamento: String,
-  status: Enum,
-  estoqueTotal: Number,
-  lotes: [ObjectId],
-  images: [ObjectId]
-}
-```
+## License
 
-#### Lote
-```javascript
-{
-  produto: ObjectId,
-  quantidade: Number,
-  validade: Date,
-  dataEntrada: Date,
-  numero: String,
-  status: Enum
-}
-```
-
-#### Imagem
-```javascript
-{
-  produto: ObjectId,
-  filename: String,
-  originalName: String,
-  mimetype: String,
-  size: Number,
-  path: String,
-  url: String,
-  width: Number,
-  height: Number
-}
-```
-
-## 📋 TODO / Melhorias Futuras
-
-- [ ] Autenticação JWT
-- [ ] Validação com Joi/Zod
-- [ ] Testes unitários/integração
-- [ ] Cache Redis
-- [ ] Upload para S3/Cloudinary
-- [ ] Logs estruturados
-- [ ] Documentação OpenAPI/Swagger
-- [ ] Rate limiting
-- [ ] Compressão de respostas
-
-## 📄 Licença
-
-Este projeto é para fins educacionais.
+Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

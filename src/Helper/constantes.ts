@@ -1,0 +1,1 @@
+export const TAMANHO_PAGINA_PADRAO = 10;
