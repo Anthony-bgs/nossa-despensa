@@ -1,11 +1,13 @@
-import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, Post, Put, Query, UseFilters } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, Post, Put, Query, Request, UseFilters, UseGuards } from '@nestjs/common';
 import { ProdutoService } from './produto.service';
 import type { ListaDeProdutosInterface, Produto } from './produto.interface';
 import type mongoose from 'mongoose';
 import type { AtualizarProdutoDTO, FiltroDTO, NovoProdutoDTO } from './produto.dto';
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
 import type { PaginacaoDTO } from '../Helper/paginacaodto';
+import { AuthGuard } from '../auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('produtos')
 @UseFilters(new HttpExceptionFilter())
 export class ProdutoController {
@@ -13,6 +15,8 @@ export class ProdutoController {
 
   @Post('/')
   async novoProduto(@Body() dados: NovoProdutoDTO): Promise<Produto | void> {
+
+
     try {
       const produto = await this.produtoService.novoProduto(dados);
       return produto;
@@ -23,13 +27,14 @@ export class ProdutoController {
   }
 
   @Get('/')
-  async buscarTodosProdutos(@Query() query?: Record<string, string>): Promise<ListaDeProdutosInterface> {
+  async buscarTodosProdutos(@Query() query?: Record<string, string>, @Request() request?: any): Promise<ListaDeProdutosInterface> {
+    console.log({ user: request['user'] });
     try {
       const { limite, pule, pagina, ...filtro } = query ?? {};
 
       const paginacao: PaginacaoDTO = {
         limite: limite !== undefined ? Number(limite) : undefined,
-        pagina: pagina !== undefined ? Number(pagina)-1 : 0,
+        pagina: pagina !== undefined ? Number(pagina) - 1 : 0,
       };
 
       return this.produtoService.buscarTodosProdutos(filtro as Partial<FiltroDTO>, paginacao);
