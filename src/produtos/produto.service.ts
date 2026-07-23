@@ -39,7 +39,7 @@ export class ProdutoService {
 
     const { limite, pule } = this.configurarPaginacao(paginacao);
 
-    let produtos = await this.produtoModel.find(filtroProduto, null, { skip: pule, limit: limite }).sort({ nome: 1 }).populate("lotes", "validade");
+    let produtos = await this.produtoModel.find(filtroProduto, null, { skip: pule, limit: limite }).collation({ locale: 'pt', strength: 2 }).sort({ nome: 1 }).populate("lotes", "validade");
     let total = await this.produtoModel.countDocuments(filtroProduto);
     
     if (filtroValidade) {
