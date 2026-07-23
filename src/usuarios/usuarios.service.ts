@@ -40,4 +40,9 @@ export class UsuariosService {
     return await bcrypt.compare(senhaTentativa, senhaUsuario);
   }
 
+  async existePorId(id: string): Promise<boolean> {
+    const usuario = await this.usuarioModel.exists({ _id: id }).exec();
+    return !!usuario;
+  }
+
 }
