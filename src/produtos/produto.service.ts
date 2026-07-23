@@ -16,7 +16,7 @@ export class ProdutoService {
     private readonly loteService: LoteService,
   ) { }
 
-  async novoProduto(dados: NovoProdutoDTO): Promise<Produto> {
+  async novoProduto(dados: NovoProdutoDTO): Promise<string> {
     const novoProduto = new this.produtoModel({
       ...dados,
       nome: dados.nome.toLowerCase(),
@@ -25,7 +25,8 @@ export class ProdutoService {
       grandeza: Grandeza[dados.grandeza],
       localArmazenamento: LocalArmazenamento[dados.localArmazenamento],
     });
-    return novoProduto.save();
+   const produtoSalvo = await novoProduto.save();
+   return produtoSalvo._id;
   }
   async buscarTodosProdutos(filtro?: Partial<FiltroDTO>, paginacao?: PaginacaoDTO): Promise<ListaDeProdutosInterface> {
     const { categoria, codigoBarras, filtroValidade, localArmazenamento, nome } = filtro ?? {};
@@ -69,7 +70,9 @@ export class ProdutoService {
     return await this.produtoModel.findOneAndUpdate({ _id }, { ...dados })
   }
   async deletarProduto(_id: string): Promise<Produto | null> {
-    return await this.produtoModel.findByIdAndDelete(_id)
+    await this.loteService.deletarLotePorProduto(_id);
+    return await this.produtoModel.findByIdAndDelete(_id);
+
   }
 
 
