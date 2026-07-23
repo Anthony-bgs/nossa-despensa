@@ -1,19 +1,19 @@
 export interface Lote {
     validade: Date;
     quantidade: number;
-    produtoId: string;
+    produto: string;
     statusValidade: StatusValidade;
     status: Status;
     _id?: string;
 }
 
 export enum StatusValidade {
-    VENCIDO = 'vencido',
-    VENCENDO = 'vencendo',
-    VALIDO = 'válido',
+    VENCIDO = 'VENCIDO',
+    VENCENDO = 'VENCENDO',
+    VALIDO = 'VALIDO',
 }
 
 export enum Status {
-    ABERTO = 'aberto',
-    FECHADO = 'fechado',
+    ABERTO = 'ABERTO',
+    FECHADO = 'FECHADO',
 }

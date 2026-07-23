@@ -11,39 +11,41 @@ export interface Produto {
     codigoBarras: string;
     localArmazenamento: LocalArmazenamento;
     status: Status
-    estoqueTotal: number;   
+    estoqueTotal: number;
     lotes: Lote[];
     images: Imagem[];
-    _id: string;                                                                
+    _id: string;
 }
 
 export enum Categoria {
-    ALIMENTO = 'alimento',
-    BEBIDA = 'bebida',
-    HIGIENE = 'higiene',
-    LIMPEZA = 'limpeza',
-    OUTROS = 'outros',
-    AUTO_CUIDADO = 'auto_cuidado',
+    ALIMENTO = 'ALIMENTO',
+    BEBIDA = 'BEBIDA',
+    HIGIENE = 'HIGIENE',
+    LIMPEZA = 'LIMPEZA',
+    OUTROS = 'OUTROS',
+    AUTO_CUIDADO = 'AUTO_CUIDADO',
 }
 
 export enum Grandeza {
-    UNIDADE = 'unidade',
-    KILOGRAMA = 'kg',
-    LITRO = 'l',
-    GRAMA = 'g',
-    MILILITRO = 'ml',
+    UNIDADE = 'UNIDADE',
+    KILOGRAMA = 'KILOGRAMA',
+    LITRO = 'LITRO',
+    GRAMA = 'GRAMA',
+    MILILITRO = 'MILILITRO',
 }
 
 export enum LocalArmazenamento {
-    OUTRO = 'outro',
-    GELADEIRA = 'geladeira',
-    FREEZER = 'freezer',
-    DESPENSA = 'despensa',
-}                                  
+    OUTRO = 'OUTRO',
+    GELADEIRA = 'GELADEIRA',
+    FREEZER = 'FREEZER',
+    DESPENSA = 'DESPENSA',
+    ARMARIO = 'ARMÁRIO',
+    BANHEIRO = 'BANHEIRO',
+}
 
 export enum Status {
-    EM_FALTA = 'em falta',
-    EM_ESTOQUE = 'em estoque',
+    EM_FALTA = 'EM_FALTA',
+    EM_ESTOQUE = 'EM_ESTOQUE',
 }
 
 export interface ListaDeProdutosInterface {
