@@ -27,7 +27,6 @@ export class ProdutoService {
     });
     return novoProduto.save();
   }
-
   async buscarTodosProdutos(filtro?: Partial<FiltroDTO>, paginacao?: PaginacaoDTO): Promise<ListaDeProdutosInterface> {
     const { categoria, codigoBarras, filtroValidade, localArmazenamento, nome } = filtro ?? {};
     const filtroProduto: _QueryFilter<Produto> = {};
@@ -57,12 +56,10 @@ export class ProdutoService {
     return {produtos, paginacao: {total: this.configurarPaginacaoResponse(total).totalPaginas}};
     // .select("nome marca categoria grandeza status estoqueTotal localArmazenamento images")
   }
-
   async buscarProdutoPorId(id: string): Promise<Produto | null> {
     return await this.produtoModel.findById(id).populate("lotes", "validade quantidade status statusValidade");
   }
-
-  async atualizarLote(_id: string, lote: Lote, estoqueTotal: number): Promise<void> {
+  async adicionarLote(_id: string, lote: Lote, estoqueTotal: number): Promise<void> {
     const status = estoqueTotal > 0 ? Status.EM_ESTOQUE : Status.EM_FALTA;
     await this.produtoModel.findByIdAndUpdate(_id, { $push: { lotes: lote._id }, $set: { estoqueTotal, status } }, { new: true });
   }
@@ -75,14 +72,35 @@ export class ProdutoService {
     return await this.produtoModel.findByIdAndDelete(_id)
   }
 
-  configurarPaginacao(paginacao?: PaginacaoDTO): { limite: number; pule: number } {
+
+  async deletarLoteDoProduto(produtoId: string, loteId: string): Promise<void> {
+    const produto = await this.produtoModel.findById(produtoId);
+  }
+
+  async buscarProdutoParaEstoqueTotal(produtoId: string): Promise<Produto | null> {
+    const produto = await this.produtoModel.findById(produtoId);
+    return produto;
+  }
+
+  
+  async removerLote(produtoId: string, loteId: string, novoEstoqueTotal: number): Promise<void> {
+    await this.atualizarEstoqueTotal(produtoId, novoEstoqueTotal);
+    await this.produtoModel.findByIdAndUpdate(produtoId, { $pull: { lotes: loteId } }, { new: true });
+  }
+
+  async atualizarEstoqueTotal(produtoId: string, estoqueTotal: number): Promise<void> {
+    const status = estoqueTotal > 0 ? Status.EM_ESTOQUE : Status.EM_FALTA;
+    await this.produtoModel.findByIdAndUpdate(produtoId, { $set: { estoqueTotal, status } }, { new: true });
+  }
+
+  private configurarPaginacao(paginacao?: PaginacaoDTO): { limite: number; pule: number } {
     const limite = paginacao?.limite ?? TAMANHO_PAGINA_PADRAO;
     const pagina = paginacao?.pagina ?? 0;
     const pule = pagina * limite;
     return { limite, pule };
   }
 
-  configurarPaginacaoResponse(quantidadeProdutos: number): { totalPaginas: number; } {
+  private configurarPaginacaoResponse(quantidadeProdutos: number): { totalPaginas: number; } {
     const totalPaginas = Math.ceil(quantidadeProdutos / TAMANHO_PAGINA_PADRAO);
     return { totalPaginas };
   }
