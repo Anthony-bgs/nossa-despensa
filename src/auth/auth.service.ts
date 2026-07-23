@@ -24,4 +24,17 @@ export class AuthService {
             access_token: await this.jwtService.signAsync(payload),
         };
     }
+
+    async validateTokenUser(userId: string | undefined): Promise<{ valid: boolean }> {
+        if (!userId) {
+            throw new UnauthorizedException();
+        }
+
+        const usuarioValido = await this.usuarioService.existePorId(userId);
+        if (!usuarioValido) {
+            throw new UnauthorizedException();
+        }
+
+        return { valid: true };
+    }
 }
