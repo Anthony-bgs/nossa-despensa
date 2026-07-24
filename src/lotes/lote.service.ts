@@ -64,6 +64,9 @@ export class LoteService {
     async buscarLotePorId(loteId: string): Promise<Lote | null> {
         return await this.loteModel.findById(loteId).exec();
     }
+    async deletarLotePorProduto(produtoId: string): Promise<void> {
+        await this.loteModel.deleteMany({ produto: produtoId }).exec();
+    }
 
     async calcularEstoqueTotalDosLotesPorProdutoId(produtoId: string): Promise<number> {
         const lotes = await this.loteModel.find({ produto: produtoId }).exec();
