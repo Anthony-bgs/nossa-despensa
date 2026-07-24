@@ -14,12 +14,9 @@ export class ProdutoController {
   constructor(private readonly produtoService: ProdutoService) { }
 
   @Post('/')
-  async novoProduto(@Body() dados: NovoProdutoDTO): Promise<Produto | void> {
-
-
+  async novoProduto(@Body() dados: NovoProdutoDTO): Promise<string> {
     try {
-      const produto = await this.produtoService.novoProduto(dados);
-      return produto;
+      return await this.produtoService.novoProduto(dados);
     } catch (error: mongoose.Error | any) {
       Logger.error('Erro ao criar produto:', error);
       throw new BadRequestException(error.message);
@@ -53,10 +50,9 @@ export class ProdutoController {
   }
 
   @Put('/:id')
-  async atualizarProduto(@Body() dados: AtualizarProdutoDTO, @Param('id') id: string): Promise<Produto | null> {
+  async atualizarProduto(@Body() dados: AtualizarProdutoDTO, @Param('id') id: string): Promise<void> {
     try {
-      const produtoAtualizado = await this.produtoService.atualizarProduto(id, dados);
-      return produtoAtualizado;
+      await this.produtoService.atualizarProduto(id, dados);
     } catch (error: mongoose.Error | any) {
       Logger.error('Erro ao atualizar produto:', error);
       throw new BadRequestException(error.message);
@@ -64,13 +60,13 @@ export class ProdutoController {
   }
 
   @Delete('/:id')
-  async deletarProduto(@Param('id') id: string): Promise<Produto | string> {
+  async deletarProduto(@Param('id') id: string): Promise<void> {
     try {
       const produtoDeletado = await this.produtoService.deletarProduto(id);
       if (!produtoDeletado) {
         throw new NotFoundException('Produto nao encontrado');
       }
-      return "Produto deletado com sucesso";
+
     } catch (error: mongoose.Error | any) {
       Logger.error('Erro ao deletar produto:', error);
       throw new BadRequestException(error.message);
