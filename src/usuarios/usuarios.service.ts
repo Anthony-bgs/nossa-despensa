@@ -24,13 +24,6 @@ export class UsuariosService {
     return senhaValida ? usuario : null;
   }
 
-  async novoUsuario(body: UsuarioDto): Promise<void> {
-    const { nome, email, senha } = body;
-    const hashedPassword = await this.criptografarSenha(senha);
-    const newUser = new this.usuarioModel({ nome, email, senha: hashedPassword });
-    await newUser.save();
-  }
-
   async criptografarSenha(senha: string): Promise<string> {
     const hash = await bcrypt.hash(senha, parseInt(SALT_OR_ROUNDS!));
     return hash;

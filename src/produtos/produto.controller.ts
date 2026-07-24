@@ -28,7 +28,6 @@ export class ProdutoController {
 
   @Get('/')
   async buscarTodosProdutos(@Query() query?: Record<string, string>, @Request() request?: any): Promise<ListaDeProdutosInterface> {
-    console.log({ user: request['user'] });
     try {
       const { limite, pule, pagina, ...filtro } = query ?? {};
 
