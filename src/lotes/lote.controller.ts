@@ -13,7 +13,8 @@ export class LoteController {
   @UseFilters(new HttpExceptionFilter())
   async adicionarLote(@Body() dados: AdicionarLoteDTO, @Param('produtoId') produtoId: string) {
     try {
-      return await this.loteService.adicionarLote(dados, produtoId);
+      await this.loteService.adicionarLote(dados, produtoId);
+      return (produtoId)
     } catch (error) {
       throw error;
     }
@@ -22,20 +23,10 @@ export class LoteController {
   @Put('/produto/:produtoId/lote/:loteId')
   @UseFilters(new HttpExceptionFilter())
   async atualizarLote(@Body() dados: AtualizarLoteDTO, @Param('produtoId') produtoId: string, @Param('loteId') loteId: string) {
-    try {
-      return await this.loteService.atualizarLote(dados, produtoId, loteId);
-    } catch (error) {
-      throw error;
-    }
   }
 
   @Delete('/:loteId')
   @UseFilters(new HttpExceptionFilter())
   async deletarLote(@Param('loteId') loteId: string) {
-    try {
-      return await this.loteService.deletarLote(loteId);
-    } catch (error) {
-      throw error;
-    }
-  }
+} 
 }
