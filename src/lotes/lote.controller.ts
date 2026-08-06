@@ -28,5 +28,10 @@ export class LoteController {
   @Delete('/:loteId')
   @UseFilters(new HttpExceptionFilter())
   async deletarLote(@Param('loteId') loteId: string) {
+    try {
+      await this.loteService.deletarLote(loteId);
+    } catch (error) {
+      throw error;
+    }
+  }
 } 
-}

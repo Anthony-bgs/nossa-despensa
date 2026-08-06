@@ -55,6 +55,7 @@ export class LoteService {
             throw new NotFoundException('Produto não encontrado');
         }
         const novoEstoqueTotal = produto.estoqueTotal - lote.quantidade;
+    
         //Removendo o lote do produto e atualiza o estoque total do produto
         await this.produtoService.removerLote(produto._id, loteId, novoEstoqueTotal);
         //Deletando o lote do banco de dados

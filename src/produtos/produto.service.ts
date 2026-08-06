@@ -93,6 +93,7 @@ export class ProdutoService {
 
   async atualizarEstoqueTotal(produtoId: string, estoqueTotal: number): Promise<void> {
     const status = estoqueTotal > 0 ? Status.EM_ESTOQUE : Status.EM_FALTA;
+    estoqueTotal = estoqueTotal < 0 ? 0 : estoqueTotal;
     await this.produtoModel.findByIdAndUpdate(produtoId, { $set: { estoqueTotal, status } }, { new: true });
   }
 
