@@ -1,20 +1,17 @@
 
-import { Imagem } from "../imagens/imagem.interface";
-import { Lote } from "../lotes/lote.interface";
-
 export interface Produto {
+    id: number;
     nome: string;
     marca: string;
-    categoria: Categoria;
-    grandeza: Grandeza;
-    tamanhoPadrao: number;
-    codigoBarras: string;
-    localArmazenamento: LocalArmazenamento;
-    status: Status
-    estoqueTotal: number;
-    lotes: Lote[];
-    images: Imagem[];
-    _id: string;
+    categoria?: Categoria | string | null;
+    grandeza?: Grandeza | string | null;
+    tamanhoPadrao?: number | null;
+    codigoBarras?: string | null;
+    localArmazenamento?: LocalArmazenamento | string | null;
+    status?: Status | string | null;
+    estoqueTotal?: number | null;
+    criado_em?: string | Date | null;
+    _id?: string;
 }
 
 export enum Categoria {
@@ -27,11 +24,11 @@ export enum Categoria {
 }
 
 export enum Grandeza {
-    UNIDADE = 'UNIDADE',
-    KILOGRAMA = 'KILOGRAMA',
-    LITRO = 'LITRO',
-    GRAMA = 'GRAMA',
-    MILILITRO = 'MILILITRO',
+    UN = 'UN',
+    KG = 'KG',
+    L = 'L',
+    G = 'G',
+    ML = 'ML',
 }
 
 export enum LocalArmazenamento {
@@ -56,6 +53,7 @@ export enum Status {
 }
 
 export interface ListaDeProdutosInterface {
+    totalProdutos: number;
     produtos: Produto[];
     paginacao: {
         total: number;

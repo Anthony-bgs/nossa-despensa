@@ -1,99 +1,123 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Categoria, Grandeza, ListaDeProdutosInterface, LocalArmazenamento, Produto, Status } from './produto.interface';
-import { InjectModel } from '@nestjs/mongoose';
-import { _QueryFilter, Model } from 'mongoose';
 import { AtualizarProdutoDTO, FiltroDTO, NovoProdutoDTO } from './produto.dto';
-import { LoteService } from '../lotes/lote.service';
-import { Lote } from '../lotes/lote.interface';
 import { PaginacaoDTO } from '../Helper/paginacaodto';
 import { TAMANHO_PAGINA_PADRAO } from '../Helper/constantes';
+import { supabase } from '../utils/supabase';
 
 @Injectable()
 export class ProdutoService {
-  constructor(
-    @InjectModel('Produto') private produtoModel: Model<Produto>,
-    @Inject(forwardRef(() => LoteService))
-    private readonly loteService: LoteService,
-  ) { }
-
   async novoProduto(dados: NovoProdutoDTO): Promise<string> {
-    const novoProduto = new this.produtoModel({
-      ...dados,
+    const payload = {
       nome: dados.nome.toLowerCase(),
       marca: dados.marca.toLowerCase(),
-      categoria: Categoria[dados.categoria],
       grandeza: Grandeza[dados.grandeza],
-      localArmazenamento: LocalArmazenamento[dados.localArmazenamento],
-    });
-   const produtoSalvo = await novoProduto.save();
-   return produtoSalvo._id;
-  }
-  async buscarTodosProdutos(filtro?: Partial<FiltroDTO>, paginacao?: PaginacaoDTO): Promise<ListaDeProdutosInterface> {
-    const { categoria, codigoBarras, filtroValidade, localArmazenamento, nome } = filtro ?? {};
-    const filtroProduto: _QueryFilter<Produto> = {};
-    
-    if (categoria) filtroProduto.categoria = Categoria[categoria];
-    if (codigoBarras) filtroProduto.codigoBarras = codigoBarras;
-    if (localArmazenamento) filtroProduto.localArmazenamento = LocalArmazenamento[localArmazenamento];
-    if (nome) filtroProduto.nome = new RegExp(nome, 'i');
+      tamanho_padrao: dados.tamanhoPadrao,
+      codigo_barras: dados.codigoBarras,
+    };
 
+    const { data, error } = await supabase
+      .from('produtos')
+      .insert(payload)
+      .select('id')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return String(data.id);
+  }
+
+  async buscarTodosProdutos(filtro?: Partial<FiltroDTO>, paginacao?: PaginacaoDTO): Promise<ListaDeProdutosInterface> {
+    const { codigoBarras, nome } = filtro ?? {};
     const { limite, pule } = this.configurarPaginacao(paginacao);
 
-    let produtos = await this.produtoModel.find(filtroProduto, null, { skip: pule, limit: limite }).collation({ locale: 'pt', strength: 2 }).sort({ nome: 1 }).populate("lotes", "validade");
-    let total = await this.produtoModel.countDocuments(filtroProduto);
-    
-    if (filtroValidade) {
-      let dataHoje = new Date();
-      let dataFinal = new Date();
-      dataFinal.setDate(dataHoje.getDate() + Number(filtroValidade));
-      produtos = produtos.filter((produto) => {
-        produto.lotes = produto.lotes.filter((lote) => {
-          return lote.validade <= dataFinal;
-        });
-        return produto.lotes.length > 0;
-      });
-      
+    let query = supabase.from('produtos').select('*', { count: 'exact' });
+
+    if (codigoBarras) {
+      query = query.eq('codigo_barras', codigoBarras);
     }
-    return {produtos, paginacao: {total: this.configurarPaginacaoResponse(total).totalPaginas}};
-    // .select("nome marca categoria grandeza status estoqueTotal localArmazenamento images")
+
+    if (nome) {
+      query = query.ilike('nome', `%${nome}%`);
+    }
+
+    const { data, error, count } = await query
+      .order('id', { ascending: true })
+      .range(pule, pule + limite - 1);
+
+    if (error) {
+      throw error;
+    }
+
+    const produtos = (data ?? []).map((produto) => this.mapProduto(produto));
+
+    return {
+      totalProdutos: Number(count ?? produtos.length),
+      produtos,
+      paginacao: {
+        total: this.configurarPaginacaoResponse(Number(count ?? produtos.length)).totalPaginas,
+      },
+    };
   }
+
   async buscarProdutoPorId(id: string): Promise<Produto | null> {
-    return await this.produtoModel.findById(id).populate("lotes", "validade quantidade status statusValidade");
+    const { data, error } = await supabase
+      .from('produtos')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return this.mapProduto(data);
   }
-  async adicionarLote(_id: string, lote: Lote, estoqueTotal: number): Promise<void> {
-    const status = estoqueTotal > 0 ? Status.EM_ESTOQUE : Status.EM_FALTA;
-    await this.produtoModel.findByIdAndUpdate(_id, { $push: { lotes: lote._id }, $set: { estoqueTotal, status } }, { new: true });
-  }
+
   async atualizarProduto(_id: string, dados: AtualizarProdutoDTO): Promise<Produto | null> {
-    if (dados.nome) dados.nome = dados.nome.toLowerCase();
-    if (dados.marca) dados.marca = dados.marca.toLowerCase();
-    return await this.produtoModel.findOneAndUpdate({ _id }, { ...dados })
+    const payload: Record<string, any> = {};
+
+    if (dados.nome) payload.nome = dados.nome.toLowerCase();
+    if (dados.marca) payload.marca = dados.marca.toLowerCase();
+    if (dados.categoria) payload.categoria = Categoria[dados.categoria];
+    if (dados.grandeza) payload.grandeza = Grandeza[dados.grandeza];
+    if (dados.tamanhoPadrao !== undefined) payload.tamanho_padrao = dados.tamanhoPadrao;
+    if (dados.codigoBarras) payload.codigo_barras = dados.codigoBarras;
+    if (dados.localArmazenamento) payload.local_armazenamento = LocalArmazenamento[dados.localArmazenamento];
+
+    if (Object.keys(payload).length === 0) {
+      return await this.buscarProdutoPorId(_id);
+    }
+
+    const { data, error } = await supabase
+      .from('produtos')
+      .update(payload)
+      .eq('id', _id)
+      .select('*')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data ? this.mapProduto(data) : null;
   }
+
   async deletarProduto(_id: string): Promise<Produto | null> {
-    await this.loteService.deletarLotePorProduto(_id);
-    return await this.produtoModel.findByIdAndDelete(_id);
+    const { data, error } = await supabase
+      .from('produtos')
+      .delete()
+      .eq('id', _id)
+      .select('*')
+      .single();
 
-  }
+    if (error) {
+      throw error;
+    }
 
-
-  async deletarLoteDoProduto(produtoId: string, loteId: string): Promise<void> {
-    const produto = await this.produtoModel.findById(produtoId);
-  }
-
-  async buscarProdutoParaEstoqueTotal(produtoId: string): Promise<Produto | null> {
-    const produto = await this.produtoModel.findById(produtoId);
-    return produto;
-  }
-
-  
-  async removerLote(produtoId: string, loteId: string, novoEstoqueTotal: number): Promise<void> {
-    await this.atualizarEstoqueTotal(produtoId, novoEstoqueTotal);
-    await this.produtoModel.findByIdAndUpdate(produtoId, { $pull: { lotes: loteId } }, { new: true });
-  }
-
-  async atualizarEstoqueTotal(produtoId: string, estoqueTotal: number): Promise<void> {
-    const status = estoqueTotal > 0 ? Status.EM_ESTOQUE : Status.EM_FALTA;
-    await this.produtoModel.findByIdAndUpdate(produtoId, { $set: { estoqueTotal, status } }, { new: true });
+    return data ? this.mapProduto(data) : null;
   }
 
   private configurarPaginacao(paginacao?: PaginacaoDTO): { limite: number; pule: number } {
@@ -103,8 +127,20 @@ export class ProdutoService {
     return { limite, pule };
   }
 
-  private configurarPaginacaoResponse(quantidadeProdutos: number): { totalPaginas: number; } {
+  private configurarPaginacaoResponse(quantidadeProdutos: number): { totalPaginas: number } {
     const totalPaginas = Math.ceil(quantidadeProdutos / TAMANHO_PAGINA_PADRAO);
     return { totalPaginas };
+  }
+
+  private mapProduto(produto: any): Produto {
+    return {
+      id: Number(produto.id ?? produto._id ?? 0),
+      nome: produto.nome,
+      marca: produto.marca,
+      grandeza: produto.grandeza,
+      tamanhoPadrao: produto.tamanho_padrao ?? produto.tamanhoPadrao ?? null,
+      codigoBarras: produto.codigo_barras ?? produto.codigoBarras ?? null,
+      criado_em: produto.criado_em ?? null,
+    };
   }
 }

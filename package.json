@@ -27,6 +27,8 @@
     "@nestjs/mongoose": "^11.0.4",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "github:nestjs/swagger",
+    "@supabase/server": "^1.4.1",
+    "@supabase/supabase-js": "^2.112.3",
     "@vercel/node": "^5.8.27",
     "bcrypt": "^6.0.0",
     "mongoose": "^9.7.3",

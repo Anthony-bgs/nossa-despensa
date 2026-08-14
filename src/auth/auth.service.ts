@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsuariosService } from '../usuarios/usuarios.service';
 import { JwtService } from '@nestjs/jwt';
+import { supabase } from '../utils/supabase';
 
 @Injectable()
 export class AuthService {
@@ -15,12 +16,8 @@ export class AuthService {
             throw new UnauthorizedException();
         }
 
-        const payload = { sub: usuario._id, email: usuario.email };
-        // TODO: Generate a JWT and return it here
-        // instead of the user object
+        const payload = { sub: usuario.id, email: usuario.email };
         return {
-            // 💡 Here the JWT secret key that's used for signing the payload 
-            // is the key that was passed in the JwtModule
             access_token: await this.jwtService.signAsync(payload),
         };
     }

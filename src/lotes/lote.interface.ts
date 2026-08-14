@@ -1,10 +1,11 @@
 export interface Lote {
-    validade: Date;
+    id: number;
+    id_produto_despensa: number;
     quantidade: number;
-    produto: string;
-    statusValidade: StatusValidade;
+    validade: Date | null;
     status: Status;
-    _id?: string;
+    status_validade: StatusValidade;
+    criado_em: string | Date;
 }
 
 export enum StatusValidade {
