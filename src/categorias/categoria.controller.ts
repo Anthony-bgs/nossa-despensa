@@ -1,23 +1,29 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   ParseIntPipe,
   Post,
   Put,
+  UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { CategoriaService } from './categoria.service';
-import type { CriarCategoriaDTO, AtualizarCategoriaDTO } from './categoria.dto';
+import type { CriarCategoriaDTO, AtualizarCategoriaDTO, BuscarCategoriaDTO } from './categoria.dto';
 import type { Categoria } from './categoria.interface';
 import { AuthGuard } from '../auth/auth.guard';
+import { PadraoMensagem } from '../utils/padraomensagem';
+import { HttpExceptionFilter } from '../filters/http-exception.filter';
 
 @UseGuards(AuthGuard)
 @Controller('categorias')
+@UseFilters(new HttpExceptionFilter())
 export class CategoriaController {
-  constructor(private readonly categoriaService: CategoriaService) {}
+  constructor(private readonly categoriaService: CategoriaService) { }
 
   @Post()
   async criar(@Body() dados: CriarCategoriaDTO): Promise<Categoria> {
@@ -25,29 +31,38 @@ export class CategoriaController {
   }
 
   @Get()
-  async listar(): Promise<Categoria[]> {
-    return await this.categoriaService.listar();
+  async listar(@Body() dados: BuscarCategoriaDTO): Promise<Categoria[]> {
+    return await this.categoriaService.listar(dados);
   }
 
   @Get(':id')
-  async buscarPorId(@Param('id', ParseIntPipe) id: number): Promise<Categoria> {
-    const categoria = await this.categoriaService.buscarPorId(id);
-    if (!categoria) {
-      throw new Error('Categoria não encontrada');
+  async buscarPorId(@Param('id', ParseIntPipe) id: number): Promise<Categoria | null> {
+    try {
+      const categoria = await this.categoriaService.buscarPorId(id);
+      return categoria;
+
+    } catch (error: any) {
+      Logger.error('Erro ao criar produto:', error);
+      throw new BadRequestException(error.message);
     }
-    return categoria;
   }
 
   @Put(':id')
   async atualizar(
     @Param('id', ParseIntPipe) id: number,
     @Body() dados: AtualizarCategoriaDTO,
-  ): Promise<Categoria> {
+  ): Promise<string> {
     return await this.categoriaService.atualizar(id, dados);
   }
 
   @Delete(':id')
   async remover(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    await this.categoriaService.remover(id);
+    try {
+      await this.categoriaService.remover(id);
+    }
+    catch (error: any) {
+      Logger.error('Erro ao criar produto:', error);
+      throw new BadRequestException(error.message);
+    }
   }
 }

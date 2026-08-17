@@ -5,3 +5,7 @@ export interface CriarCategoriaDTO {
 export interface AtualizarCategoriaDTO {
   nome?: string;
 }
+export interface BuscarCategoriaDTO {
+  nome?: string;
+}
+

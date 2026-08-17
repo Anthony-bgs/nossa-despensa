@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Categoria } from './categoria.interface';
-import { CriarCategoriaDTO, AtualizarCategoriaDTO } from './categoria.dto';
+import { CriarCategoriaDTO, AtualizarCategoriaDTO, BuscarCategoriaDTO } from './categoria.dto';
 import { supabase } from '../utils/supabase';
+import { PadraoMensagem } from '../utils/padraomensagem';
 
 @Injectable()
 export class CategoriaService {
@@ -19,16 +20,14 @@ export class CategoriaService {
     return this.mapCategoria(data);
   }
 
-  async listar(): Promise<Categoria[]> {
-    const { data, error } = await supabase
-      .from('categorias')
-      .select('*')
-      .order('nome', { ascending: true });
-
-    if (error) {
-      throw error;
+  async listar(dados: BuscarCategoriaDTO): Promise<Categoria[]> {
+    const { nome } = dados ?? {};
+    let query = supabase.from('categorias').select('*').order('nome', { ascending: true });
+    if (nome) {
+      query = query.ilike('nome', `%${nome}%`);
     }
-
+    const { data, error } = await query;
+    if (error) { throw error; }
     return (data ?? []).map((item) => this.mapCategoria(item));
   }
 
@@ -40,13 +39,12 @@ export class CategoriaService {
       .single();
 
     if (error || !data) {
-      return null;
+      throw new Error(PadraoMensagem.ERRO_NAO_ENCONTRADO);
     }
-
     return this.mapCategoria(data);
   }
 
-  async atualizar(id: number, dados: AtualizarCategoriaDTO): Promise<Categoria> {
+  async atualizar(id: number, dados: AtualizarCategoriaDTO): Promise<string> {
     const categoriaExistente = await this.buscarPorId(id);
     if (!categoriaExistente) {
       throw new NotFoundException('Categoria não encontrada');
@@ -56,14 +54,14 @@ export class CategoriaService {
       .from('categorias')
       .update({ nome: dados.nome ?? categoriaExistente.nome })
       .eq('id', id)
-      .select('*')
+      .select('id')
       .single();
 
     if (error) {
       throw error;
     }
 
-    return this.mapCategoria(data);
+    return PadraoMensagem.SUCESSO_ATUALIZACAO;
   }
 
   async remover(id: number): Promise<void> {

@@ -6,6 +6,6 @@ export interface Usuario {
 }
 
 export interface UsuarioLogin{
-    id: string;
+    id: number;
     email: string;
 }

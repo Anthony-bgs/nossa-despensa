@@ -46,6 +46,7 @@ export class UsuariosService {
 
     const senhaValida = await this.compararSenhas(senha, data.senha);
     if (!senhaValida) {
+      
       return null;
     }
 

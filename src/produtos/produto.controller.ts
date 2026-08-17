@@ -41,7 +41,7 @@ export class ProdutoController {
   }
 
   @Get('/:id')
-  async buscarProdutoPorId(@Param('id') id: string): Promise<Produto | string> {
+  async buscarProdutoPorId(@Param('id') id: number): Promise<Produto | string> {
     const produto = await this.produtoService.buscarProdutoPorId(id);
     if (!produto) {
       throw new NotFoundException('Produto nao encontrado');
@@ -50,7 +50,7 @@ export class ProdutoController {
   }
 
   @Put('/:id')
-  async atualizarProduto(@Body() dados: AtualizarProdutoDTO, @Param('id') id: string): Promise<void> {
+  async atualizarProduto(@Body() dados: AtualizarProdutoDTO, @Param('id') id: number): Promise<void> {
     try {
       await this.produtoService.atualizarProduto(id, dados);
     } catch (error: any) {
@@ -60,7 +60,7 @@ export class ProdutoController {
   }
 
   @Delete('/:id')
-  async deletarProduto(@Param('id') id: string): Promise<void> {
+  async deletarProduto(@Param('id') id: number): Promise<void> {
     try {
       const produtoDeletado = await this.produtoService.deletarProduto(id);
       if (!produtoDeletado) {

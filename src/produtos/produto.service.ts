@@ -62,7 +62,7 @@ export class ProdutoService {
     };
   }
 
-  async buscarProdutoPorId(id: string): Promise<Produto | null> {
+  async buscarProdutoPorId(id: number): Promise<Produto | null> {
     const { data, error } = await supabase
       .from('produtos')
       .select('*')
@@ -76,17 +76,13 @@ export class ProdutoService {
     return this.mapProduto(data);
   }
 
-  async atualizarProduto(_id: string, dados: AtualizarProdutoDTO): Promise<Produto | null> {
+  async atualizarProduto(_id: number, dados: AtualizarProdutoDTO): Promise<Produto | null> {
     const payload: Record<string, any> = {};
 
     if (dados.nome) payload.nome = dados.nome.toLowerCase();
     if (dados.marca) payload.marca = dados.marca.toLowerCase();
-    if (dados.categoria) payload.categoria = Categoria[dados.categoria];
-    if (dados.grandeza) payload.grandeza = Grandeza[dados.grandeza];
-    if (dados.tamanhoPadrao !== undefined) payload.tamanho_padrao = dados.tamanhoPadrao;
-    if (dados.codigoBarras) payload.codigo_barras = dados.codigoBarras;
-    if (dados.localArmazenamento) payload.local_armazenamento = LocalArmazenamento[dados.localArmazenamento];
-
+    if (dados.grandeza && dados.grandeza.toUpperCase() in Grandeza) payload.grandeza = Grandeza[dados.grandeza];else throw new Error(`Valor inválido para grandeza: ${dados.grandeza}`);
+    if (dados.tamanhoPadrao && typeof dados.tamanhoPadrao == "number" ) payload.tamanho_padrao = dados.tamanhoPadrao;else throw new Error(`tamanho padrão não é um numero`);
     if (Object.keys(payload).length === 0) {
       return await this.buscarProdutoPorId(_id);
     }
@@ -105,11 +101,11 @@ export class ProdutoService {
     return data ? this.mapProduto(data) : null;
   }
 
-  async deletarProduto(_id: string): Promise<Produto | null> {
+  async deletarProduto(id: number): Promise<Produto | null> {
     const { data, error } = await supabase
       .from('produtos')
       .delete()
-      .eq('id', _id)
+      .eq('id', id)
       .select('*')
       .single();
 
@@ -140,7 +136,7 @@ export class ProdutoService {
       grandeza: produto.grandeza,
       tamanhoPadrao: produto.tamanho_padrao ?? produto.tamanhoPadrao ?? null,
       codigoBarras: produto.codigo_barras ?? produto.codigoBarras ?? null,
-      criado_em: produto.criado_em ?? null,
+      criadoEm: produto.criado_em ?? null,
     };
   }
 }

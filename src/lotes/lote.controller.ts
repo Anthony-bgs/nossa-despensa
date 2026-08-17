@@ -19,9 +19,9 @@ import { AuthGuard } from '../auth/auth.guard';
 export class LoteController {
   constructor(private readonly loteService: LoteService) {}
 
-  @Post()
-  async adicionarLote(@Body() dados: AdicionarLoteDTO): Promise<Lote> {
-    return await this.loteService.adicionarLote(dados);
+  @Post('/:idProdutoDespensa')
+  async adicionarLote(@Body() dados: AdicionarLoteDTO, @Param('idProdutoDespensa', ParseIntPipe) idProdutoDespensa: number): Promise<Lote> {
+    return await this.loteService.adicionarLote(dados, idProdutoDespensa);
   }
 
   @Get('/produto-despensa/:idProdutoDespensa')
