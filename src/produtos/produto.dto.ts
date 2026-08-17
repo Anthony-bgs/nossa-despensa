@@ -6,13 +6,11 @@ export interface NovoProdutoDTO {
     grandeza: Grandeza;
     tamanhoPadrao: number;
     codigoBarras: string;
-    localArmazenamento: LocalArmazenamento;
 }
 
 export interface AtualizarProdutoDTO {
     nome?: string;
     marca?: string;
-    categoria?: Categoria;
     grandeza?: Grandeza;
     tamanhoPadrao?: number;
     codigoBarras?: string;

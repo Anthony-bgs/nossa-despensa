@@ -1,7 +1,9 @@
 export interface CriarDespensaDTO {
-  id_usuario: number;
+  idUsuario: number;
+  
+  nome: string;
 }
 
 export interface AtualizarDespensaDTO {
-  id_usuario?: number;
+  nome: string;
 }

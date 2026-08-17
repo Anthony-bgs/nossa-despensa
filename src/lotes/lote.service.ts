@@ -5,8 +5,10 @@ import { supabase } from '../utils/supabase';
 
 @Injectable()
 export class LoteService {
-  async adicionarLote(dados: AdicionarLoteDTO): Promise<Lote> {
-    const produtoDespensa = await this.buscarProdutoDespensaPorId(dados.id_produto_despensa);
+  async adicionarLote(dados: AdicionarLoteDTO, idprodutoDespensa: number): Promise<Lote> {
+    console.log(idprodutoDespensa)
+    const produtoDespensa = await this.buscarProdutoDespensaPorId(idprodutoDespensa);
+    console.log(produtoDespensa);
     if (!produtoDespensa) {
       throw new NotFoundException('Produto da despensa não encontrado');
     }
@@ -22,6 +24,7 @@ export class LoteService {
     const { data, error } = await supabase
       .from('lotes')
       .insert(payload)
+      .eq ('id_produto_despensa', dados.id_produto_despensa)
       .select('*')
       .single();
 
@@ -33,13 +36,13 @@ export class LoteService {
     await this.atualizarEstoqueProdutoDespensa(dados.id_produto_despensa, Number(dados.quantidade ?? 0));
 
     return loteSalvo;
-  }
-
+  }  
   async atualizarLote(id: number, dados: AtualizarLoteDTO): Promise<Lote> {
     const loteExistente = await this.buscarLotePorId(id);
     if (!loteExistente) {
       throw new NotFoundException('Lote não encontrado');
     }
+  
 
     const payload = {
       quantidade: dados.quantidade ?? loteExistente.quantidade,

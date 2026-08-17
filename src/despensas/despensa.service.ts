@@ -5,11 +5,13 @@ import { supabase } from '../utils/supabase';
 
 @Injectable()
 export class DespensaService {
-  async criar(dados: CriarDespensaDTO): Promise<Despensa> {
+  async criar(dados: CriarDespensaDTO, idUsuario: number): Promise<Despensa> {
+
     const { data, error } = await supabase
       .from('despensas')
       .insert({
-        id_usuario: dados.id_usuario,
+        id_usuario: idUsuario,
+        nome: dados.nome,
       })
       .select('*')
       .single();
@@ -55,8 +57,7 @@ export class DespensaService {
       throw new NotFoundException('Despensa não encontrada');
     }
 
-    const payload: Record<string, any> = {};
-    if (dados.id_usuario !== undefined) payload.id_usuario = dados.id_usuario;
+    const payload: AtualizarDespensaDTO = dados
 
     const { data, error } = await supabase
       .from('despensas')
@@ -91,8 +92,9 @@ export class DespensaService {
   private mapDespensa(despensa: any): Despensa {
     return {
       id: despensa.id,
-      id_usuario: despensa.id_usuario,
-      criado_em: despensa.criado_em,
+      nome: despensa.nome,
+      idUsuario: despensa.id_usuario,
+      criadoEm: despensa.criado_em,
     };
   }
 }

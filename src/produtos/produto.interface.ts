@@ -10,8 +10,7 @@ export interface Produto {
     localArmazenamento?: LocalArmazenamento | string | null;
     status?: Status | string | null;
     estoqueTotal?: number | null;
-    criado_em?: string | Date | null;
-    _id?: string;
+    criadoEm?: string | Date | null;
 }
 
 export enum Categoria {
