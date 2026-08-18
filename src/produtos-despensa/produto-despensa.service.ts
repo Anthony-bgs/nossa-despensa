@@ -5,6 +5,7 @@ import {
   AtualizarProdutoDespensaDTO,
 } from './produto-despensa.dto';
 import { supabase } from '../utils/supabase';
+import { StatusDespensa } from '../Helper/enum';
 
 @Injectable()
 export class ProdutoDespensaService {
@@ -12,12 +13,12 @@ export class ProdutoDespensaService {
     const { data, error } = await supabase
       .from('produtos_despensa')
       .insert({
-        id_despensa: dados.id_despensa,
-        id_produto: dados.id_produto,
-        id_categoria: dados.id_categoria ?? null,
-        id_local_armazenamento: dados.id_local_armazenamento ?? null,
-        status_produto: dados.status_produto ?? 'ativo',
-        estoque_total_produto: dados.estoque_total_produto ?? 0,
+        id_despensa: dados.idDespensa,
+        id_produto: dados.idProduto,
+        id_categoria: dados.idCategoria ?? null,
+        id_local_armazenamento: dados.idLocalArmazenamento ?? null,
+        estoque_total_produto: dados.estoqueTotalProduto ?? 0,
+        status_produto: dados.estoqueTotalProduto && dados.estoqueTotalProduto > 0 ? StatusDespensa.EM_ESTOQUE : StatusDespensa.EM_FALTA,
       })
       .select('*')
       .single();
@@ -68,14 +69,11 @@ export class ProdutoDespensaService {
     const { data, error } = await supabase
       .from('produtos_despensa')
       .update({
-        id_despensa: dados.id_despensa ?? itemExistente.id_despensa,
-        id_produto: dados.id_produto ?? itemExistente.id_produto,
-        id_categoria: dados.id_categoria ?? itemExistente.id_categoria ?? null,
-        id_local_armazenamento:
-          dados.id_local_armazenamento ?? itemExistente.id_local_armazenamento ?? null,
-        status_produto: dados.status_produto ?? itemExistente.status_produto,
-        estoque_total_produto:
-          dados.estoque_total_produto ?? itemExistente.estoque_total_produto,
+        id_despensa: dados.idDespensa ?? itemExistente.idDespensa,
+        id_produto: dados.idProduto ?? itemExistente.idProduto,
+        id_categoria: dados.idCategoria ?? itemExistente.idCategoria ?? null,
+        id_local_armazenamento:dados.idLocalArmazenamento ?? itemExistente.idLocalArmazenamento ?? null,
+        estoque_total_produto:dados.estoqueTotalProduto ?? itemExistente.estoqueTotalProduto,
       })
       .eq('id', id)
       .select('*')
@@ -107,13 +105,13 @@ export class ProdutoDespensaService {
   private mapProdutoDespensa(item: any): ProdutoDespensa {
     return {
       id: item.id,
-      id_despensa: item.id_despensa,
-      id_produto: item.id_produto,
-      id_categoria: item.id_categoria ?? null,
-      id_local_armazenamento: item.id_local_armazenamento ?? null,
-      status_produto: item.status_produto,
-      estoque_total_produto: item.estoque_total_produto,
-      criado_em: item.criado_em,
+      idDespensa: item.id_despensa,
+      idProduto: item.id_produto,
+      idCategoria: item.id_categoria ?? null,
+      idLocalArmazenamento: item.id_local_armazenamento ?? null,
+      statusProduto: item.status_produto,
+      estoqueTotalProduto: item.estoque_total_produto,
+      criadoEm: item.criado_em,
     };
   }
 }

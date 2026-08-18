@@ -1,14 +1,5 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
+import {Body,Controller,Delete,Get,Param,ParseIntPipe,Post,Put,UseGuards,} 
+from '@nestjs/common';
 import { LocalArmazenamentoService } from './local-armazenamento.service';
 import type {
   CriarLocalArmazenamentoDTO,

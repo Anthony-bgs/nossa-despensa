@@ -1,13 +1,5 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Put,
-  UseGuards,
+  Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards,
 } from '@nestjs/common';
 import { ProdutoDespensaService } from './produto-despensa.service';
 import type {
@@ -22,7 +14,7 @@ import { AuthGuard } from '../auth/auth.guard';
 export class ProdutoDespensaController {
   constructor(
     private readonly produtoDespensaService: ProdutoDespensaService,
-  ) {}
+  ) { }
 
   @Post()
   async criar(

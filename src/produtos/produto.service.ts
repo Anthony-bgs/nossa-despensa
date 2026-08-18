@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Categoria, Grandeza, ListaDeProdutosInterface, LocalArmazenamento, Produto, Status } from './produto.interface';
+import { Categoria, Grandeza, ListaDeProdutosInterface,Produto} from './produto.interface';
 import { AtualizarProdutoDTO, FiltroDTO, NovoProdutoDTO } from './produto.dto';
 import { PaginacaoDTO } from '../Helper/paginacaodto';
 import { TAMANHO_PAGINA_PADRAO } from '../Helper/constantes';

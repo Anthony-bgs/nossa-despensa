@@ -1,6 +1,6 @@
 export interface LocalArmazenamento {
   id: number;
-  nome: string;
-  descricao?: string | null;
-  criado_em: string | Date;
+  local: string;
+  idDespensa: number;
+  criadoEm: string | Date;
 }

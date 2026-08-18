@@ -10,10 +10,10 @@ import { supabase } from '../utils/supabase';
 export class LocalArmazenamentoService {
   async criar(dados: CriarLocalArmazenamentoDTO): Promise<LocalArmazenamento> {
     const { data, error } = await supabase
-      .from('locais_armazenamento')
+      .from('locais_armazenamento_despensa')
       .insert({
-        nome: dados.nome,
-        descricao: dados.descricao ?? null,
+        local: dados.local,
+        id_despensa: dados.idDespensa
       })
       .select('*')
       .single();
@@ -27,9 +27,9 @@ export class LocalArmazenamentoService {
 
   async listar(): Promise<LocalArmazenamento[]> {
     const { data, error } = await supabase
-      .from('locais_armazenamento')
+      .from('locais_armazenamento_despensa')
       .select('*')
-      .order('nome', { ascending: true });
+      .order('local', { ascending: true });
 
     if (error) {
       throw error;
@@ -40,7 +40,7 @@ export class LocalArmazenamentoService {
 
   async buscarPorId(id: number): Promise<LocalArmazenamento | null> {
     const { data, error } = await supabase
-      .from('locais_armazenamento')
+      .from('locais_armazenamento_despensa')
       .select('*')
       .eq('id', id)
       .single();
@@ -62,10 +62,10 @@ export class LocalArmazenamentoService {
     }
 
     const { data, error } = await supabase
-      .from('locais_armazenamento')
+      .from('locais_armazenamento_despensa')
       .update({
-        nome: dados.nome ?? localExistente.nome,
-        descricao: dados.descricao ?? localExistente.descricao ?? null,
+        local: dados.local ?? localExistente.local,
+        id_despensa: dados.idDespensa ?? localExistente.idDespensa,
       })
       .eq('id', id)
       .select('*')
@@ -85,7 +85,7 @@ export class LocalArmazenamentoService {
     }
 
     const { error } = await supabase
-      .from('locais_armazenamento')
+      .from('locais_armazenamento_despensa')
       .delete()
       .eq('id', id);
 
@@ -97,9 +97,9 @@ export class LocalArmazenamentoService {
   private mapLocal(local: any): LocalArmazenamento {
     return {
       id: local.id,
-      nome: local.nome,
-      descricao: local.descricao ?? null,
-      criado_em: local.criado_em,
+      local: local.local,
+      idDespensa: local.id_despensa,
+      criadoEm: local.criado_em,
     };
   }
 }

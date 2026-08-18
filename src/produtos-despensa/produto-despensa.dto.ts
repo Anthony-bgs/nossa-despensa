@@ -1,17 +1,17 @@
 export interface CriarProdutoDespensaDTO {
-  id_despensa: number;
-  id_produto: number;
-  id_categoria?: number | null;
-  id_local_armazenamento?: number | null;
-  status_produto?: string;
-  estoque_total_produto?: number;
+  idDespensa: number;
+  idProduto: number;
+  idCategoria?: number | null;
+  idLocalArmazenamento?: number | null;
+  statusProduto?: string;
+  estoqueTotalProduto?: number;
 }
 
 export interface AtualizarProdutoDespensaDTO {
-  id_despensa?: number;
-  id_produto?: number;
-  id_categoria?: number | null;
-  id_local_armazenamento?: number | null;
-  status_produto?: string;
-  estoque_total_produto?: number;
+  idDespensa?: number;
+  idProduto?: number;
+  idCategoria?: number | null;
+  idLocalArmazenamento?: number | null;
+  statusProduto?: string;
+  estoqueTotalProduto?: number;
 }

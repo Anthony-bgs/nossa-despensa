@@ -8,7 +8,6 @@ export interface Produto {
     tamanhoPadrao?: number | null;
     codigoBarras?: string | null;
     localArmazenamento?: LocalArmazenamento | string | null;
-    status?: Status | string | null;
     estoqueTotal?: number | null;
     criadoEm?: string | Date | null;
 }
@@ -44,11 +43,6 @@ export enum LocalArmazenamento {
     BANHEIRO = 'BANHEIRO',
     COMODA_COZINHA = 'COMODA_COZINHA',
     GUARDA_ROUPA = 'GUARDA_ROUPA',
-}
-
-export enum Status {
-    EM_FALTA = 'EM_FALTA',
-    EM_ESTOQUE = 'EM_ESTOQUE',
 }
 
 export interface ListaDeProdutosInterface {
