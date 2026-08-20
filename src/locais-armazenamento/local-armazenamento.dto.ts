@@ -7,4 +7,5 @@ export interface CriarLocalArmazenamentoDTO {
 export interface AtualizarLocalArmazenamentoDTO {
   local?: string;
   idDespensa?: number;
+  descricao?: string | null;
 }

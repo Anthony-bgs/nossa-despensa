@@ -3,7 +3,7 @@ export interface ProdutoDespensa {
   idDespensa: number;
   idProduto: number;
   idCategoria?: number | null;
-  idLocalArmazenamento?: number | null;
+  idLocal?: number | null;
   statusProduto: string;
   estoqueTotalProduto: number;
   criadoEm: string | Date;

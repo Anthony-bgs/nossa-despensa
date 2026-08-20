@@ -13,7 +13,8 @@ export class LocalArmazenamentoService {
       .from('locais_armazenamento_despensa')
       .insert({
         local: dados.local,
-        id_despensa: dados.idDespensa
+        id_despensa: dados.idDespensa,
+        descricao: dados.descricao ?? null,
       })
       .select('*')
       .single();
@@ -66,6 +67,7 @@ export class LocalArmazenamentoService {
       .update({
         local: dados.local ?? localExistente.local,
         id_despensa: dados.idDespensa ?? localExistente.idDespensa,
+        descricao: dados.descricao ?? localExistente.descricao,
       })
       .eq('id', id)
       .select('*')

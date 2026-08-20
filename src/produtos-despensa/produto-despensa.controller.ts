@@ -39,6 +39,17 @@ export class ProdutoDespensaController {
     return item;
   }
 
+  @Get('despensa/:idDespensa')
+  async buscarPorIdDespensa(
+    @Param('idDespensa', ParseIntPipe) idDespensa: number,
+  ): Promise<ProdutoDespensa[]> {
+    const items = await this.produtoDespensaService.buscarPorIdDespensa(idDespensa);
+    if (!items || items.length === 0) {
+      throw new Error('Produtos da despensa não encontrados');
+    }
+    return items;
+  }
+
   @Put(':id')
   async atualizar(
     @Param('id', ParseIntPipe) id: number,

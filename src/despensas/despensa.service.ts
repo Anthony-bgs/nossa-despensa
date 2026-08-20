@@ -26,7 +26,14 @@ export class DespensaService {
   async listarPorUsuario(idUsuario: number): Promise<Despensa[]> {
     const { data, error } = await supabase
       .from('despensas')
-      .select('*')
+      .select(`
+        id,
+        nome,
+        id_usuario,
+        criado_em,
+        produtos_despensa!left(count),
+        locais_armazenamento_despensa!left(count)
+      `)
       .eq('id_usuario', idUsuario)
       .order('criado_em', { ascending: false });
 
@@ -34,13 +41,24 @@ export class DespensaService {
       throw error;
     }
 
-    return (data ?? []).map((item) => this.mapDespensa(item));
+    return (data ?? []).map((item) => ({
+      id: item.id,
+      nome: item.nome,
+      idUsuario: item.id_usuario,
+      criadoEm: item.criado_em,
+      quantidadeProdutos: Number(item.produtos_despensa?.[0]?.count ?? 0),
+      quantidadeLocaisArmazenamento: Number(
+        item.locais_armazenamento_despensa?.[0]?.count ?? 0,
+      ),
+    }));
   }
 
   async buscarPorId(id: number): Promise<Despensa | null> {
     const { data, error } = await supabase
       .from('despensas')
-      .select('*')
+      .select(`*,
+        locais_armazenamento_despensa(id, local)
+      `)
       .eq('id', id)
       .single();
 
@@ -48,7 +66,7 @@ export class DespensaService {
       return null;
     }
 
-    return this.mapDespensa(data);
+    return this.mapDespensaDetalhes(data);
   }
 
   async atualizar(id: number, dados: AtualizarDespensaDTO): Promise<Despensa> {
@@ -96,5 +114,32 @@ export class DespensaService {
       idUsuario: despensa.id_usuario,
       criadoEm: despensa.criado_em,
     };
+  }
+
+  private mapDespensaDetalhes(despensa: any): Despensa {
+    return {
+      id: despensa.id,
+      nome: despensa.nome,
+      idUsuario: despensa.id_usuario,
+      criadoEm: despensa.criado_em,
+      quantidadeProdutos: Number(
+        Array.isArray(despensa.produtos_despensa)
+          ? despensa.produtos_despensa.length
+          : despensa.produtos_despensa?.[0]?.count ?? 0,
+      ),
+      quantidadeLocaisArmazenamento: Number(
+        Array.isArray(despensa.locais_armazenamento_despensa)
+          ? despensa.locais_armazenamento_despensa.length
+          : despensa.locais_armazenamento_despensa?.[0]?.count ?? 0,
+      ),
+      locaisArmazenamentoDespensa: Array.isArray(despensa.locais_armazenamento_despensa)
+        ? despensa.locais_armazenamento_despensa.map((item: any) => ({
+          id: item.id,
+          local: item.local,
+          idDespensa: item.id_despensa,
+          criadoEm: item.criado_em,
+        }))
+        : [],
+    }
   }
 }

@@ -16,7 +16,7 @@ export class ProdutoDespensaService {
         id_despensa: dados.idDespensa,
         id_produto: dados.idProduto,
         id_categoria: dados.idCategoria ?? null,
-        id_local_armazenamento: dados.idLocalArmazenamento ?? null,
+        id_local: dados.idLocal ?? null,
         estoque_total_produto: dados.estoqueTotalProduto ?? 0,
         status_produto: dados.estoqueTotalProduto && dados.estoqueTotalProduto > 0 ? StatusDespensa.EM_ESTOQUE : StatusDespensa.EM_FALTA,
       })
@@ -57,6 +57,19 @@ export class ProdutoDespensaService {
     return this.mapProdutoDespensa(data);
   }
 
+  async buscarPorIdDespensa(idDespensa: number): Promise<ProdutoDespensa[]> {
+    const { data, error } = await supabase
+      .from('produtos_despensa')
+      .select('*')
+      .eq('id_despensa', idDespensa);
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((item) => this.mapProdutoDespensa(item));
+  }
+
   async atualizar(
     id: number,
     dados: AtualizarProdutoDespensaDTO,
@@ -72,7 +85,7 @@ export class ProdutoDespensaService {
         id_despensa: dados.idDespensa ?? itemExistente.idDespensa,
         id_produto: dados.idProduto ?? itemExistente.idProduto,
         id_categoria: dados.idCategoria ?? itemExistente.idCategoria ?? null,
-        id_local_armazenamento:dados.idLocalArmazenamento ?? itemExistente.idLocalArmazenamento ?? null,
+        id_local_armazenamento:dados.idLocal ?? itemExistente.idLocal ?? null,
         estoque_total_produto:dados.estoqueTotalProduto ?? itemExistente.estoqueTotalProduto,
       })
       .eq('id', id)
@@ -108,7 +121,7 @@ export class ProdutoDespensaService {
       idDespensa: item.id_despensa,
       idProduto: item.id_produto,
       idCategoria: item.id_categoria ?? null,
-      idLocalArmazenamento: item.id_local_armazenamento ?? null,
+      idLocal: item.id_local ?? null,
       statusProduto: item.status_produto,
       estoqueTotalProduto: item.estoque_total_produto,
       criadoEm: item.criado_em,

@@ -28,10 +28,10 @@ import { HttpSuccessInterceptor } from './filters/http-success.filter';
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: HttpSuccessInterceptor,
-    },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: HttpSuccessInterceptor,
+    // },
   ],
 })
 export class AppModule { }
