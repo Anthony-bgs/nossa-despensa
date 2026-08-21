@@ -1,15 +1,14 @@
 import { Status, StatusValidade } from './lote.interface';
 
 export interface AdicionarLoteDTO {
-  id_produto_despensa: number;
+  idProdutoDespensa: number;
   quantidade: number;
-  validade?: Date | string | null;
-  status?: Status;
+  validade: Date;
+  statusLote ?: Status;
 }
 
 export interface AtualizarLoteDTO {
   quantidade?: number;
-  validade?: Date | string | null;
-  status?: Status;
-  status_validade?: StatusValidade;
+  validade?: Date;
+  statusLote?: Status;
 }

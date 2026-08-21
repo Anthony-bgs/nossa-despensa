@@ -71,7 +71,6 @@ export class UsuariosService {
       id: data.id,
       nome: data.nome,
       email: data.email,
-      senha: data.senha,
     };
   }
 
@@ -90,7 +89,6 @@ export class UsuariosService {
       id: data.id,
       nome: data.nome,
       email: data.email,
-      senha: data.senha,
     };
   }
 
@@ -103,13 +101,15 @@ export class UsuariosService {
     return await bcrypt.compare(senhaTentativa, senhaUsuario);
   }
 
-  async existePorId(id: string): Promise<boolean> {
+  async existePorId(id: number): Promise<boolean> {
     const { data, error } = await supabase
       .from('usuarios')
       .select('id')
       .eq('id', id)
       .maybeSingle();
-
-    return !error && !!data;
+      if ( data && data.id === id) {
+        return true;
+      }
+      return false;
   }
 }

@@ -23,7 +23,7 @@ export class AuthService {
         };
     }
 
-    async validateTokenUser(userId: string | undefined): Promise<{ valid: boolean }> {
+    async validateTokenUser(userId: number | undefined): Promise<{ valid: boolean }> {
         if (!userId) {
             throw new UnauthorizedException();
         }

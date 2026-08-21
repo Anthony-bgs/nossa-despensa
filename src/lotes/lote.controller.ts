@@ -20,8 +20,14 @@ export class LoteController {
   constructor(private readonly loteService: LoteService) {}
 
   @Post('/:idProdutoDespensa')
+  
   async adicionarLote(@Body() dados: AdicionarLoteDTO, @Param('idProdutoDespensa', ParseIntPipe) idProdutoDespensa: number): Promise<Lote> {
     return await this.loteService.adicionarLote(dados, idProdutoDespensa);
+  }
+  @Delete('deletarlotes/:id')
+  async deletarLotePorPoduto(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.loteService.deletarLotePorProduto(id);
+    return;
   }
 
   @Get('/produto-despensa/:idProdutoDespensa')
@@ -29,6 +35,12 @@ export class LoteController {
     @Param('idProdutoDespensa', ParseIntPipe) idProdutoDespensa: number,
   ): Promise<Lote[]> {
     return await this.loteService.listarPorProdutoDespensa(idProdutoDespensa);
+  }
+  @Get('/estoque-total/:idProdutoDespensa')
+  async calcularEstoqueTotalDosLotesPorProdutoDespensa(
+    @Param('idProdutoDespensa', ParseIntPipe) idProdutoDespensa: number,
+  ): Promise<number> {
+    return await this.loteService.calcularEstoqueTotalDosLotesPorProdutoDespensa(idProdutoDespensa);
   }
 
   @Get(':id')
