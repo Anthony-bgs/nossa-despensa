@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Request,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
@@ -24,23 +25,24 @@ import { HttpExceptionFilter } from '../filters/http-exception.filter';
 export class DespensaController {
   constructor(private readonly despensaService: DespensaService) { }
 
-  @Post("usuario/:idUsuario")
-  async criar(@Body() dados: CriarDespensaDTO, @Param('idUsuario', ParseIntPipe) idUsuario: number): Promise<Despensa> {
+  @Post("usuario")
+  async criar(@Body() dados: CriarDespensaDTO, @Request() req: any): Promise<Despensa> {
     try {
-      return await this.despensaService.criar(dados, idUsuario);
+      return await this.despensaService.criar(dados, req?.usuario?.sub);
     } catch (error: any) {
       Logger.error('Erro ao criar despensa:', error);
       throw new BadRequestException(error.message);
     }
   }
 
-  @Get('usuario/:idUsuario')
-  async listarPorUsuario(@Param('idUsuario', ParseIntPipe) idUsuario: number): Promise<Despensa[]> {
-    return await this.despensaService.listarPorUsuario(idUsuario);
+  @Get('usuario')
+  async listarPorUsuario(@Request() req: any): Promise<Despensa[]> {
+    console.log(req);
+    return await this.despensaService.listarPorUsuario(req?.usuario?.sub);
   }
 
   @Get(':id')
-  async buscarPorId(@Param('id', ParseIntPipe) id: number): Promise<Despensa> {
+  async buscarPorId(@Param('id', ParseIntPipe, ) id: number): Promise<Despensa> {
     const despensa = await this.despensaService.buscarPorId(id);
     if (!despensa) {
       throw new Error('Despensa não encontrada');

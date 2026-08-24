@@ -5,6 +5,7 @@ import {
   HttpCode,
   Param,
   Post,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
@@ -23,9 +24,9 @@ export class UsuariosController {
   }
 
   @UseGuards(AuthGuard)
-  @Get(':id')
-  async buscarPorId(@Param('id') id: string): Promise<Usuario> {
-    const usuario = await this.usuariosService.buscarPorId(id);
+  @Get("eu")
+  async buscarPorId(@Request() req: any): Promise<Usuario> {
+    const usuario = await this.usuariosService.buscarPorId(req?.usuario?.sub);
     if (!usuario) {
       throw new Error('Usuário não encontrado');
     }

@@ -19,7 +19,7 @@ export class ProdutoController {
       return await this.produtoService.novoProduto(dados);
     } catch (error: any) {
       Logger.error('Erro ao criar produto:', error);
-      throw new BadRequestException(error.message);
+      throw error;
     }
   }
 
@@ -36,7 +36,7 @@ export class ProdutoController {
       return this.produtoService.buscarTodosProdutos(filtro as Partial<FiltroDTO>, paginacao);
     } catch (error: any) {
       Logger.error('Erro ao buscar produtos:', error);
-      throw new BadRequestException(error.message);
+      throw error;
     }
   }
 

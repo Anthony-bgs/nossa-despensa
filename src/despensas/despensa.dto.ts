@@ -1,6 +1,5 @@
 export interface CriarDespensaDTO {
-  idUsuario: number;
-  
+
   nome: string;
 }
 

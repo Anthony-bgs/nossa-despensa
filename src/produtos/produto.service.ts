@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { Categoria, Grandeza, ListaDeProdutosInterface,Produto} from './produto.interface';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { Categoria, Grandeza, ListaDeProdutosInterface, Produto } from './produto.interface';
 import { AtualizarProdutoDTO, FiltroDTO, NovoProdutoDTO } from './produto.dto';
 import { PaginacaoDTO } from '../Helper/paginacaodto';
 import { TAMANHO_PAGINA_PADRAO } from '../Helper/constantes';
@@ -23,6 +23,9 @@ export class ProdutoService {
       .single();
 
     if (error) {
+      if (error.code === '23505') {
+        throw new ConflictException("codigo de barras já existe");
+      }
       throw error;
     }
 
@@ -48,6 +51,9 @@ export class ProdutoService {
       .range(pule, pule + limite - 1);
 
     if (error) {
+      if (error.code === 'PGRST103') {
+        throw new BadRequestException('Parâmetros de paginação inválidos');
+      }
       throw error;
     }
 
@@ -57,7 +63,7 @@ export class ProdutoService {
       totalProdutos: Number(count ?? produtos.length),
       produtos,
       paginacao: {
-        total: this.configurarPaginacaoResponse(Number(count ?? produtos.length)).totalPaginas,
+        total: this.configurarPaginacaoResponse(Number(count ?? produtos.length), limite).totalPaginas,
       },
     };
   }
@@ -81,8 +87,8 @@ export class ProdutoService {
 
     if (dados.nome) payload.nome = dados.nome.toLowerCase();
     if (dados.marca) payload.marca = dados.marca.toLowerCase();
-    if (dados.grandeza && dados.grandeza.toUpperCase() in Grandeza) payload.grandeza = Grandeza[dados.grandeza];else throw new Error(`Valor inválido para grandeza: ${dados.grandeza}`);
-    if (dados.tamanhoPadrao && typeof dados.tamanhoPadrao == "number" ) payload.tamanho_padrao = dados.tamanhoPadrao;else throw new Error(`tamanho padrão não é um numero`);
+    if (dados.grandeza && dados.grandeza.toUpperCase() in Grandeza) payload.grandeza = Grandeza[dados.grandeza]; else throw new Error(`Valor inválido para grandeza: ${dados.grandeza}`);
+    if (dados.tamanhoPadrao && typeof dados.tamanhoPadrao == "number") payload.tamanho_padrao = dados.tamanhoPadrao; else throw new Error(`tamanho padrão não é um numero`);
     if (Object.keys(payload).length === 0) {
       return await this.buscarProdutoPorId(_id);
     }
@@ -123,7 +129,11 @@ export class ProdutoService {
     return { limite, pule };
   }
 
-  private configurarPaginacaoResponse(quantidadeProdutos: number): { totalPaginas: number } {
+  private configurarPaginacaoResponse(quantidadeProdutos: number, limite: number): { totalPaginas: number } {
+    if (limite) {
+      const totalPaginas = Math.ceil(quantidadeProdutos / limite);
+      return { totalPaginas };
+    }
     const totalPaginas = Math.ceil(quantidadeProdutos / TAMANHO_PAGINA_PADRAO);
     return { totalPaginas };
   }
