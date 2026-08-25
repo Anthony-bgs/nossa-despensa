@@ -37,8 +37,11 @@ export class DespensaController {
 
   @Get('usuario')
   async listarPorUsuario(@Request() req: any): Promise<Despensa[]> {
-    console.log(req);
+    try {
     return await this.despensaService.listarPorUsuario(req?.usuario?.sub);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get(':id')
@@ -55,11 +58,19 @@ export class DespensaController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dados: AtualizarDespensaDTO,
   ): Promise<Despensa> {
-    return await this.despensaService.atualizar(id, dados);
+    try {
+      return await this.despensaService.atualizar(id, dados);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete(':id')
   async remover(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    try {
     await this.despensaService.remover(id);
+    } catch (error) {
+      throw error;
+    }
   }
 }

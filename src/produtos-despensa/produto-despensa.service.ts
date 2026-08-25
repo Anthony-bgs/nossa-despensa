@@ -9,7 +9,22 @@ import { StatusDespensa } from '../Helper/enum';
 
 @Injectable()
 export class ProdutoDespensaService {
-  async criar(dados: CriarProdutoDespensaDTO): Promise<ProdutoDespensa> {
+  async criar(dados: CriarProdutoDespensaDTO, userId: number): Promise<ProdutoDespensa> {
+    const { data: despensa, error: despensaError } = await supabase
+      .from('despensas')
+      .select('id, id_usuario')
+      .eq('id', dados.idDespensa)
+      .eq('id_usuario', userId)
+      .maybeSingle();
+
+    if (despensaError) {
+      throw despensaError;
+    }
+
+    if (!despensa) {
+      throw new NotFoundException('Despensa não encontrada para este usuário');
+    }
+
     const { data, error } = await supabase
       .from('produtos_despensa')
       .insert({
@@ -85,8 +100,8 @@ export class ProdutoDespensaService {
         id_despensa: dados.idDespensa ?? itemExistente.idDespensa,
         id_produto: dados.idProduto ?? itemExistente.idProduto,
         id_categoria: dados.idCategoria ?? itemExistente.idCategoria ?? null,
-        id_local_armazenamento:dados.idLocal ?? itemExistente.idLocal ?? null,
-        estoque_total_produto:dados.estoqueTotalProduto ?? itemExistente.estoqueTotalProduto,
+        id_local_armazenamento: dados.idLocal ?? itemExistente.idLocal ?? null,
+        estoque_total_produto: dados.estoqueTotalProduto ?? itemExistente.estoqueTotalProduto,
       })
       .eq('id', id)
       .select('*')
@@ -99,19 +114,29 @@ export class ProdutoDespensaService {
     return this.mapProdutoDespensa(data);
   }
 
-  async remover(id: number): Promise<void> {
-    const item = await this.buscarPorId(id);
+  async remover(userId: number, id: number): Promise<void> {
+    const { data: item, error: buscaError } = await supabase
+      .from('produtos_despensa')
+      .select('id, despensas!inner(id_usuario)')
+      .eq('id', id)
+      .eq('despensas.id_usuario', userId)
+      .maybeSingle();
+
+    if (buscaError) {
+      throw buscaError;
+    }
+
     if (!item) {
       throw new NotFoundException('Produto da despensa não encontrado');
     }
 
-    const { error } = await supabase
+    const { error: remocaoError } = await supabase
       .from('produtos_despensa')
       .delete()
       .eq('id', id);
 
-    if (error) {
-      throw error;
+    if (remocaoError) {
+      throw remocaoError;
     }
   }
 
@@ -127,4 +152,22 @@ export class ProdutoDespensaService {
       criadoEm: item.criado_em,
     };
   }
-}
+
+    async confirmarUsuario(id: number, userId: number): Promise<boolean> {
+      const { data, error } = await supabase
+        .from('despensas')
+        .select('id, id_usuario')
+        .eq('id', id)
+        .eq('id_usuario', userId)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        return false;
+      }
+
+      return true;
+    }}

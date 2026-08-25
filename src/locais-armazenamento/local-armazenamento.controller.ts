@@ -1,4 +1,4 @@
-import {Body,Controller,Delete,Get,Param,ParseIntPipe,Post,Put,UseGuards,} 
+import {Body,Controller,Delete,Get,Param,ParseIntPipe,Post,Put,UseFilters,UseGuards,} 
 from '@nestjs/common';
 import { LocalArmazenamentoService } from './local-armazenamento.service';
 import type {
@@ -7,9 +7,11 @@ import type {
 } from './local-armazenamento.dto';
 import type { LocalArmazenamento } from './local-armazenamento.interface';
 import { AuthGuard } from '../auth/auth.guard';
+import { HttpExceptionFilter } from '../filters/http-exception.filter';
 
 @UseGuards(AuthGuard)
 @Controller('locais-armazenamento')
+@UseFilters(new HttpExceptionFilter())
 export class LocalArmazenamentoController {
   constructor(
     private readonly localArmazenamentoService: LocalArmazenamentoService,
@@ -17,12 +19,20 @@ export class LocalArmazenamentoController {
 
   @Post()
   async criar(@Body() dados: CriarLocalArmazenamentoDTO): Promise<LocalArmazenamento> {
+    try {
     return await this.localArmazenamentoService.criar(dados);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get()
   async listar(): Promise<LocalArmazenamento[]> {
+    try {
     return await this.localArmazenamentoService.listar();
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get(':id')
@@ -41,11 +51,19 @@ export class LocalArmazenamentoController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dados: AtualizarLocalArmazenamentoDTO,
   ): Promise<LocalArmazenamento> {
+    try {
     return await this.localArmazenamentoService.atualizar(id, dados);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete(':id')
   async remover(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    try {
     await this.localArmazenamentoService.remover(id);
+    } catch (error) {
+      throw error;
+    }
   }
 }

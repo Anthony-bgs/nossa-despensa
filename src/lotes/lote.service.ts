@@ -1,12 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Lote, LoteSchema, Status, StatusValidade } from './lote.interface';
-import { AdicionarLoteDTO, AtualizarLoteDTO } from './lote.dto';
+import { AdicionarLoteDTO, AtualizarLoteDTO, DeletarLoteDTO } from './lote.dto';
 import { supabase } from '../utils/supabase';
+import { ProdutoDespensaService } from '../produtos-despensa/produto-despensa.service';
 
 @Injectable()
 export class LoteService {
-  async adicionarLote(dados: AdicionarLoteDTO, idprodutoDespensa: number): Promise<Lote> {
-    const produtoDespensa = await this.buscarProdutoDespensaPorId(idprodutoDespensa);
+  constructor(private readonly produtoDespensaService: ProdutoDespensaService) { }
+
+  async adicionarLote(dados: AdicionarLoteDTO, userId: number): Promise<Lote> {
+    const usuarioconfirmado = await this.produtoDespensaService.confirmarUsuario(dados.idProdutoDespensa, userId);
+    if (!usuarioconfirmado ) {
+      throw new NotFoundException('Produto da despensa não encontrado para este usuário');
+    }
+    const produtoDespensa = await this.buscarProdutoDespensaPorId(dados.idProdutoDespensa);
     if (!produtoDespensa) {
       throw new NotFoundException('Produto da despensa não encontrado');
     }
@@ -19,10 +26,10 @@ export class LoteService {
       status_validade: this.calcularStatusValidade(dados.validade ?? null),
     };
 
-    const { data, error } = await supabase 
+    const { data, error } = await supabase
       .from('lotes')
       .insert(payload)
-      .eq ('id_ass_produto_despensa', dados.idProdutoDespensa)
+      .eq('id_ass_produto_despensa', dados.idProdutoDespensa)
       .select('*')
       .single();
 
@@ -33,13 +40,13 @@ export class LoteService {
     const loteSalvo = this.mapLote(data);
     await this.atualizarEstoqueProdutoDespensa(dados.idProdutoDespensa, Number(dados.quantidade ?? 0));
     return loteSalvo;
-  }  
+  }
   async atualizarLote(id: number, dados: AtualizarLoteDTO): Promise<Lote> {
     const loteExistente = await this.buscarLotePorIdInterno(id);
     if (!loteExistente) {
       throw new NotFoundException('Lote não encontrado');
     }
-  
+
 
     const payload = {
       quantidade: dados.quantidade ?? loteExistente.quantidade,
@@ -63,8 +70,9 @@ export class LoteService {
     return this.mapLote(data);
   }
 
-  async deletarLote(id: number): Promise<void> {
-    const lote = await this.buscarLotePorId(id);
+  async deletarLote(data : DeletarLoteDTO, userId: number): Promise<void> {
+    await this.produtoDespensaService.confirmarUsuario(data.idProdutoDespensa, userId);
+    const lote = await this.buscarLotePorId(data.idLote);
     if (!lote) {
       throw new NotFoundException('Lote não encontrado');
     }
@@ -72,7 +80,7 @@ export class LoteService {
     const { error } = await supabase
       .from('lotes')
       .delete()
-      .eq('id', id);
+      .eq('id', data.idLote);
 
     if (error) {
       throw error;
@@ -81,11 +89,15 @@ export class LoteService {
     await this.atualizarEstoqueProdutoDespensa(lote.id_ass_produto_despensa, -lote.quantidade);
   }
 
-  async deletarLotePorProduto(produtoId: Number): Promise<void> {
+  async deletarLotePorProduto(idProdutoDespensa: number, idUsuario: number): Promise<void> {
+    await this.produtoDespensaService.confirmarUsuario(idProdutoDespensa, idUsuario);
+    if (!true) {
+      throw new NotFoundException('Produto da despensa não encontrado para este usuário');
+    }
     const { data: itensProdutoDespensa, error: itensError } = await supabase
       .from('produtos_despensa')
       .select('*')
-      .eq('id', produtoId);
+      .eq('id', idProdutoDespensa);
 
     if (itensError) {
       throw itensError;
@@ -134,7 +146,7 @@ export class LoteService {
 
     return this.mapLote(data);
   }
-   async buscarLotePorIdInterno(id: number): Promise<LoteSchema | null> {
+  async buscarLotePorIdInterno(id: number): Promise<LoteSchema | null> {
     const { data, error } = await supabase
       .from('lotes')
       .select('*')
@@ -157,7 +169,7 @@ export class LoteService {
     if (error) {
       throw error;
     }
-        return (data ?? []).reduce((total, lote) => total + lote.quantidade, 0);
+    return (data ?? []).reduce((total, lote) => total + lote.quantidade, 0);
   }
 
   calcularStatusValidade(validade: Date | string | null): StatusValidade {

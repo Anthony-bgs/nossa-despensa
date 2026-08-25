@@ -12,3 +12,8 @@ export interface AtualizarLoteDTO {
   validade?: Date;
   statusLote?: Status;
 }
+
+export interface DeletarLoteDTO {
+  idProdutoDespensa: number;
+  idLote: number;
+}

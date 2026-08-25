@@ -42,11 +42,16 @@ export class ProdutoController {
 
   @Get('/:id')
   async buscarProdutoPorId(@Param('id') id: number): Promise<Produto | string> {
-    const produto = await this.produtoService.buscarProdutoPorId(id);
+    try {
+      const produto = await this.produtoService.buscarProdutoPorId(id);
     if (!produto) {
       throw new NotFoundException('Produto nao encontrado');
     }
     return produto;
+    } catch (error: any) {
+      Logger.error('Erro ao buscar produto:', error);
+      throw error;
+    }
   }
 
   @Put('/:id')

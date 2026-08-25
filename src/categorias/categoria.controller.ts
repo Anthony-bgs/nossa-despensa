@@ -27,12 +27,20 @@ export class CategoriaController {
 
   @Post()
   async criar(@Body() dados: CriarCategoriaDTO): Promise<Categoria> {
+    try {
     return await this.categoriaService.criar(dados);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get()
   async listar(@Body() dados: BuscarCategoriaDTO): Promise<Categoria[]> {
+    try { 
     return await this.categoriaService.listar(dados);
+    } catch (error) {
+      throw error;
+  }
   }
 
   @Get(':id')
@@ -52,7 +60,11 @@ export class CategoriaController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dados: AtualizarCategoriaDTO,
   ): Promise<string> {
-    return await this.categoriaService.atualizar(id, dados);
+    try {
+       return await this.categoriaService.atualizar(id, dados);
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete(':id')
