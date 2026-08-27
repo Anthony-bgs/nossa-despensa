@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -14,6 +15,7 @@ import type { UsuarioDto } from './usuario.dto';
 import type { Usuario } from './usuarios.interface';
 import { AuthGuard } from '../auth/auth.guard';
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
+
 
 @Controller('usuarios')
 @UseFilters(new HttpExceptionFilter())
@@ -43,5 +45,14 @@ export class UsuariosController {
       throw error;
     }
    
+  }
+  @Delete("deletar")
+  @UseGuards(AuthGuard)
+  async deletar(@Request() req: any): Promise<void> {
+    try {
+      await this.usuariosService.deletar(req?.usuario?.sub);
+    } catch (error) {
+      throw error;
+    }
   }
 }

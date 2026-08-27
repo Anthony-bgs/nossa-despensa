@@ -4,6 +4,7 @@ import { Usuario, UsuarioLogin } from './usuarios.interface';
 import { SALT_OR_ROUNDS } from '../Helper/constantes';
 import { supabase } from '../utils/supabase';
 import type { UsuarioDto } from './usuario.dto';
+import { decryptData, encryptData } from '../crypto/crypto';
 
 @Injectable()
 export class UsuariosService {
@@ -14,8 +15,11 @@ export class UsuariosService {
     if (emailExiste) {
       throw new ConflictException('E-mail já cadastrado');
     }
-
     const senhaHash = await this.criptografarSenha(dados.senha);
+    if (dados.cpf) {
+      const cpfCriptografado = await encryptData(dados.cpf);
+      dados.cpf = cpfCriptografado;
+    }
 
     const usuario = await supabase
       .from('usuarios')
@@ -23,6 +27,9 @@ export class UsuariosService {
         nome: dados.nome,
         email: dados.email,
         senha: senhaHash,
+        cpf: dados.cpf,
+        foto: dados.foto,
+        telefone: dados.telefone,
       })
       .single();
 
@@ -84,11 +91,15 @@ export class UsuariosService {
     if (error || !data) {
       return null;
     }
+    const cpfDescriptografado = data.cpf ? await decryptData(data.cpf) : undefined;
 
     return {
       id: data.id,
       nome: data.nome,
       email: data.email,
+      telefone: data.telefone,
+      foto: data.foto,
+      cpf: cpfDescriptografado,
     };
   }
 
@@ -111,5 +122,14 @@ export class UsuariosService {
         return true;
       }
       return false;
+  }
+  async deletar(id: number): Promise<void> {
+    const { error } = await supabase
+      .from('usuarios')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      throw error;
+    }
   }
 }

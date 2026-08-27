@@ -32,11 +32,19 @@ export class ProdutoService {
     return String(data.id);
   }
 
-  async buscarTodosProdutos(filtro?: Partial<FiltroDTO>, paginacao?: PaginacaoDTO): Promise<ListaDeProdutosInterface> {
-    const { codigoBarras, nome } = filtro ?? {};
+  async buscarTodosProdutos(filtro?: Partial<FiltroDTO>, paginacao?: PaginacaoDTO, idUusario?: number): Promise<ListaDeProdutosInterface> {
+    const { codigoBarras, nome, marca, validade } = filtro ?? {};
     const { limite, pule } = this.configurarPaginacao(paginacao);
 
-    let query = supabase.from('produtos').select('*', { count: 'exact' });
+    let query = supabase
+           .from('produtos_despensa')
+      .select(`
+        *,
+        produtos!inner (marca,nome),
+        lotes!inner (validade_produto),
+        despensa!inner (id_usuario)
+          
+      `, { count: 'exact' });
 
     if (codigoBarras) {
       query = query.eq('codigo_barras', codigoBarras);
@@ -44,6 +52,12 @@ export class ProdutoService {
 
     if (nome) {
       query = query.ilike('nome', `%${nome}%`);
+    }
+    if (marca) {
+      query = query.ilike('marca', `%${marca}%`);
+    }
+    if (validade) {
+      query = query.eq('validade_produto', validade);
     }
 
     const { data, error, count } = await query

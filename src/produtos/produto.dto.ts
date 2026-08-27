@@ -20,4 +20,7 @@ export interface AtualizarProdutoDTO {
 export interface FiltroDTO {
     nome?: string;
     codigoBarras?: string;
+    marca?: string;
+    validade?: Date;
+    categoria?: Categoria;
 }
