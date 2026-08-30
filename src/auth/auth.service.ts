@@ -1,7 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsuariosService } from '../usuarios/usuarios.service';
 import { JwtService } from '@nestjs/jwt';
-import { supabase } from '../utils/supabase';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +22,33 @@ export class AuthService {
         };
     }
 
-    async validateTokenUser(userId: number | undefined): Promise<{ valid: boolean}> {
+    async signInGoogle(profile: {
+        email: string;
+        firstName?: string;
+        lastName?: string;
+        picture?: string;
+    }): Promise<{ access_token: string; usuario: number; email: string }> {
+        const nome = [profile.firstName, profile.lastName]
+            .filter(Boolean)
+            .join(' ')
+            .trim() || profile.email.split('@')[0];
+
+        const usuario = await this.usuarioService.criarOuBuscarPorGoogle({
+            email: profile.email,
+            nome,
+            foto: profile.picture,
+        });
+
+        const payload = { sub: usuario.id, email: usuario.email };
+
+        return {
+            access_token: await this.jwtService.signAsync(payload),
+            usuario: usuario.id,
+            email: usuario.email,
+        };
+    }
+
+    async validateTokenUser(userId: number | undefined): Promise<{ valid: boolean }> {
         if (!userId) {
             throw new UnauthorizedException();
         }

@@ -81,6 +81,40 @@ export class UsuariosService {
     };
   }
 
+  async criarOuBuscarPorGoogle(dados: { email: string; nome: string; foto?: string }): Promise<UsuarioLogin> {
+    const usuarioExistente = await this.buscarPorEmail(dados.email);
+    if (usuarioExistente) {
+      return {
+        id: Number(usuarioExistente.id),
+        email: usuarioExistente.email,
+      };
+    }
+
+    const senhaPadrao = process.env.GOOGLE_DEFAULT_PASSWORD ?? 'google-user-default-password';
+    const senhaHash = await this.criptografarSenha(senhaPadrao);
+
+    const { data, error } = await supabase
+      .from('usuarios')
+      .insert({
+        nome: dados.nome,
+        email: dados.email,
+        senha: senhaHash,
+        foto: dados.foto,
+        telefone: null,
+      })
+      .select('id, email')
+      .single();
+
+    if (error || !data) {
+      throw error ?? new Error('Erro ao criar usuário via Google');
+    }
+
+    return {
+      id: Number(data.id),
+      email: data.email,
+    };
+  }
+
   async buscarPorId(id: string): Promise<Usuario | null> {
     const { data, error } = await supabase
       .from('usuarios')

@@ -23,8 +23,8 @@ export class ProdutoController {
     }
   }
 
-  @Get('/')
-  async buscarTodosProdutos(@Query() query?: any, @Request() request?: any): Promise<ListaDeProdutosInterface> {
+  @Get('/todos')
+  async buscarTodosProdutos(@Query() query?: any): Promise<ListaDeProdutosInterface> {
     try {
       const { limite, pule, pagina, ...filtro } = query ?? {};
 
@@ -33,7 +33,7 @@ export class ProdutoController {
         pagina: pagina !== undefined ? Number(pagina) - 1 : 0,
       };
 
-      return this.produtoService.buscarTodosProdutos(filtro as Partial<FiltroDTO>, paginacao, request.usuario?.sub);
+      return this.produtoService.buscarTodosProdutos(filtro as Partial<FiltroDTO>, paginacao);
     } catch (error: any) {
       Logger.error('Erro ao buscar produtos:', error);
       throw error;
