@@ -1,8 +1,8 @@
-export interface Usuario {
+export interface UsuarioSchema {
   id: number;
   nome: string;
   email: string;
-  senha_hash: string;
+  senha: string;
   foto: string | null;
   telefone: string | null;
   cpf: string | null;
