@@ -51,10 +51,7 @@ export class AuthController {
         });
 
         return res.status(HttpStatus.OK).json({
-            message: 'Usuário autenticado com sucesso!',
-            access_token: result.access_token,
-            usuario: result.usuario,
-            email: result.email,
+            access_token: result.access_token
         });
     }
 }
