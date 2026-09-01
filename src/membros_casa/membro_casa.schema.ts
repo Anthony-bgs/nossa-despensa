@@ -13,4 +13,5 @@ export interface MembroCasaSchema {
 export interface MembroCasaSchema_Criar {
 	casa_id: number;
 	usuario_id: number;
+	codigo?:string;
 }

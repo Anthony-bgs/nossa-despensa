@@ -5,7 +5,7 @@ export interface Usuario {
     telefone?: string;
     foto?: string;
     cpf?: string;
-    criadoEm: string;
+    criadoEm?: string;
     atualizadoEm?: string;
 }
 

@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { MembroCasaDTO_Criar } from "./membro_casa.dto";
+import { adicionarMembroDTO, MembroCasaDTO_Criar } from "./membro_casa.dto";
 import { MembroCasaSchema, MembroCasaSchema_Criar } from "./membro_casa.schema";
 import { supabase } from "../utils/supabase";
 
@@ -39,5 +39,33 @@ export class MembroCasaService {
             },
         }));
         return response;
+    }
+    async adicionarMembro(dados: adicionarMembroDTO, id: number): Promise<void> {
+        const payload: MembroCasaSchema_Criar = {
+            
+            casa_id: dados.casaId,
+            usuario_id: dados.usuarioId,
+            codigo: dados.codigo,
+        };
+        
+        const { data, error } = await supabase.from('membros_casa').insert(payload).select("id").single<MembroCasaSchema>();
+
+        if(error) {
+            throw error;
+        }
+    }
+    async convidarMembro(casaId: number, usuarioId: number): Promise<void> {
+        const codigo = Math.floor(100000 + Math.random() * 900000).toString().substring(0, 6);
+        const payload = {
+            casa_id: casaId,
+            usuario_id:usuarioId,
+            codigo: codigo,
+        };
+
+        const { data, error } = await supabase.from('codigo_convite').insert(payload).single();
+        if (error) {
+            throw error;
+        }
+        return;
     }
 }

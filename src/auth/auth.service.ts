@@ -39,7 +39,7 @@ export class AuthService {
             foto: profile.picture,
         });
 
-        const payload = { sub: usuario.id, email: usuario.email };
+        const payload = { id: usuario.id, email: usuario.email };
 
         return {
             access_token: await this.jwtService.signAsync(payload),

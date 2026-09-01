@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { CasaCriarDTO } from "./casa.dto";
+import { CasaCriarDTO} from "./casa.dto";
 import { CasaSchema, CasaSchema_Criar } from "./casa.schema";
 import { supabase } from "../utils/supabase";
 import { Casa } from "./casa.interface";
@@ -74,4 +74,5 @@ export class CasaService {
             atualizadoEm: casa.atualizado_em ? new Date(casa.atualizado_em).toLocaleString() : null,
         };
     }
+    
 }

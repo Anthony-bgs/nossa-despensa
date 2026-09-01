@@ -16,3 +16,5 @@ export const CRYPTO_SECRET_KEY = process.env.CRYPTO_SECRET_KEY!;
 export const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
 export const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
 export const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL!;
+export const USUARIO_EMAIL = process.env.USUARIO_EMAIL!;
+export const USUARIO_EMAIL_SENHA = process.env.USUUARIO_EMAIL_SENHA!;
