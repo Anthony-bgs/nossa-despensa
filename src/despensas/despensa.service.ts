@@ -10,7 +10,7 @@ export class DespensaService {
     const { data, error } = await supabase
       .from('despensas')
       .insert({
-        id_usuario: idUsuario,
+        usuario_id: idUsuario,
         nome: dados.nome,
       })
       .select('*')
