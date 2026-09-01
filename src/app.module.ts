@@ -10,13 +10,17 @@ import { CategoriaModule } from './categorias/categoria.module';
 import { LocalArmazenamentoModule } from './locais-armazenamento/local-armazenamento.module';
 import { ProdutoDespensaModule } from './produtos-despensa/produto-despensa.module';
 import { HttpSuccessInterceptor } from './filters/http-success.filter';
+import { MembroCasaModule } from './membros_casa/membro_casa.module';
+import { CasaModule } from './casas/casa.module';
 
 @Module({
   imports: [
+    UsuariosModule,
+    MembroCasaModule,
+    CasaModule,
     ProdutoModule,
     LoteModule,
     AuthModule,
-    UsuariosModule,
     DespensaModule,
     CategoriaModule,
     LocalArmazenamentoModule,

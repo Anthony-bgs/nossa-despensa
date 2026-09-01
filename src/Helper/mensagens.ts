@@ -1,5 +1,6 @@
 export enum Mensagens {
   USUARIO_NAO_ENCONTRADO = 'Usuário não encontrado',
+  CASA_NAO_ENCONTRADA = 'Casa não encontrada',
   EMAIL_JA_CADASTRADO = 'E-mail já cadastrado',
   CPF_JA_CADASTRADO = 'CPF já cadastrado',
   SENHA_INVALIDA = 'Senha inválida',

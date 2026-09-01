@@ -1,6 +1,6 @@
 import { PapelMembroCasa, StatusMembroCasa } from "../Helper/enum";
 
-export interface MembroCasa {
+export interface MembroCasaSchema {
 	id: number;
 	casa_id: number;
 	usuario_id: number;
@@ -8,4 +8,9 @@ export interface MembroCasa {
 	status: StatusMembroCasa;
 	criado_em: Date;
 	atualizado_em: Date | null;
+}
+
+export interface MembroCasaSchema_Criar {
+	casa_id: number;
+	usuario_id: number;
 }
