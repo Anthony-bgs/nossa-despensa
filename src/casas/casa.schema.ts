@@ -9,5 +9,6 @@ export interface CasaSchema {
 
 export interface CasaSchema_Criar {
   nome: string;
+  usuario_id: number;
   descricao?: string;
 }

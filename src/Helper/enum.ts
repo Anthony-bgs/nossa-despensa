@@ -9,8 +9,10 @@ export enum PapelMembroCasa {
 }
 
 export enum StatusMembroCasa {
-    ATIVO = 'ATIVO',
-    INATIVO = 'INATIVO',
+    PENDENTE = 'PENDENTE',
+    ACEITO = 'ACEITO',
+    REJEITADO = 'REJEITADO',
+    DONO = 'DONO',
 }
 
 export enum StatusItemDespensa {

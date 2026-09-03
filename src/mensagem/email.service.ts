@@ -1,34 +1,33 @@
-import { EmailDTO } from "../casas/casa.dto";
+import { BadRequestException } from "@nestjs/common";
 import { USUARIO_EMAIL, USUARIO_EMAIL_SENHA } from "../Helper/constantes";
 
 export class EmailService {
     
 
-async enviarEmail(dados: EmailDTO): Promise<void> {
+async enviarEmail(destinatario: string, codigo: string): Promise<void> {
     const nodemailer = require('nodemailer');
 // Configuração do transporte
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
-  secure: false, // true para porta 465, false para outras portas
+  secure: false, 
   auth: {
-    user: USUARIO_EMAIL, // seu e-mail
+    user: USUARIO_EMAIL, 
     pass: USUARIO_EMAIL_SENHA
 }
 });
 
-// Configuração da mensagem
 const mailOptions = {
-  from: dados.email, // seu e-mail
-  to: dados.destinatario, // e-mail do destinatário
-  subject: dados.assunto,
-  text: dados.mensagem
+  from: "decadente.romancista@gmail.com",
+  to: destinatario, 
+  subject: "código de convite",
+  text: "seu código de convite é: " + codigo 
 };
 
 // Envio do e-mail
 transporter.sendMail(mailOptions, (error, info) => {
   if (error) {
-    return console.log('Erro ao enviar: ', error);
+    throw new BadRequestException("Erro ao enviar e-mail: " + error.message);
   }
-  console.log('E-mail enviado com sucesso: ' + info.response);
+return true;
 });}}

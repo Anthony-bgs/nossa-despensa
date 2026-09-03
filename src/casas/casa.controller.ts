@@ -1,9 +1,8 @@
 import { Body, Controller, Get, HttpCode, Param, Post, Req, Request, UseFilters, UseGuards } from "@nestjs/common";
 import { HttpExceptionFilter } from "../filters/http-exception.filter";
 import { CasaService } from "./casa.service";
-import type { CasaCriarDTO, EmailDTO } from "./casa.dto";
 import { AuthGuard } from "../auth/auth.guard";
-import { EmailService } from "../mensagem/email.service";
+import type { CasaCriarDTO, EntrarComConviteDTO } from "./casa.dto";
 
 @Controller('casa')
 @UseFilters(new HttpExceptionFilter())
@@ -30,5 +29,13 @@ export class CasaController {
             throw error;
         }
     }
- 
+    @Post("/entrar-convite")
+    @UseGuards(AuthGuard)
+    async entrarComConvite(@Body() dados: EntrarComConviteDTO, @Req() req: any): Promise<void> {
+        try {
+            await this.casaService.entrarComConvite(dados.codigo, req.usuario.id);
+        } catch (error) {
+            throw error;
+        }
+    }
 }

@@ -10,4 +10,5 @@ export enum Mensagens {
   DADOS_INVALIDOS = 'Dados inválidos',
   RECURSO_NAO_ENCONTRADO = 'Recurso não encontrado',
   ERRO_DESCONHECIDO = 'Erro desconhecido',
+  USUARIO_JA_EXISTE_NA_CASA = 'Usuário já existe na casa',
 }

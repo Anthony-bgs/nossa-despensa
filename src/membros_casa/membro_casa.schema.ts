@@ -14,4 +14,6 @@ export interface MembroCasaSchema_Criar {
 	casa_id: number;
 	usuario_id: number;
 	codigo?:string;
+	papel?: PapelMembroCasa;
+	status?: StatusMembroCasa;
 }

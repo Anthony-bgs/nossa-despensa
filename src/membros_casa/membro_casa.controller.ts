@@ -2,8 +2,7 @@ import { Body, Controller, HttpCode, Param, Post, Req, UseFilters, UseGuards } f
 import { HttpExceptionFilter } from "../filters/http-exception.filter";
 import { AuthGuard } from "../auth/auth.guard";
 import { MembroCasaService } from "./membro_casa.service";
-import type { adicionarMembroDTO } from "./membro_casa.dto";
-import type { EmailDTO } from "../casas/casa.dto";
+import type { adicionarMembroDTO, convidarMembroDTO } from "./membro_casa.dto";
 import { EmailService } from "../mensagem/email.service";
 
 @Controller('membros-casa')
@@ -20,22 +19,11 @@ async adicionarMembro(@Body() dados: adicionarMembroDTO, @Req() req: any): Promi
 }
    @Post("/convidar-membro")
     @UseGuards(AuthGuard)
-    async convidarMembro(@Param("casa_id") casaId: number, @Req() req: any): Promise<void> {
+    async convidarMembro(@Body() dados: convidarMembroDTO, @Req() req: any): Promise<void> {
         try {
-            await this.membroCasaService.convidarMembro(casaId , req.usuario.id);
+            await this.membroCasaService.convidarMembro(dados.casaId, dados.emailDestinatario, req.usuario.id);
         } catch (error) {
             throw error;
         }
     }
-     @Post("/enviar")
-    async enviarEmail(@Body() dados: EmailDTO): Promise<void> {
-        try {
-            // Enviar o e-mail usando o serviço de e-mail
-            await this.emailService.enviarEmail(dados);
-            console.log("E-mail enviado com sucesso!");
-        } catch (error) {
-            console.error("Erro ao enviar o e-mail:", error);
-            throw error;
-        }
-}
 }
