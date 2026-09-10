@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Param, Post, Req, UseFilters, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, HttpCode, Param, Post, Req, UseFilters, UseGuards } from "@nestjs/common";
 import { HttpExceptionFilter } from "../filters/http-exception.filter";
 import { AuthGuard } from "../auth/auth.guard";
 import { MembroCasaService } from "./membro_casa.service";
@@ -26,4 +26,11 @@ async adicionarMembro(@Body() dados: adicionarMembroDTO, @Req() req: any): Promi
             throw error;
         }
     }
-}
+    @Delete("/")
+    async deletarConvite(): Promise<void> {
+        try {
+            await this.membroCasaService.deletarConvite();
+        } catch (error) {
+            throw error;
+        }
+}}

@@ -80,4 +80,9 @@ export class MembroCasaService {
         }
         return;
     }
-}
+    async deletarConvite(): Promise<void> {
+        const datehoje = new Date();
+        datehoje.setDate(datehoje.getDate() - 1);
+        console.log(datehoje);
+        await supabase.from("codigo_convite").delete().lt("created_at", datehoje.toISOString());
+}}
