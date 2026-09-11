@@ -26,11 +26,4 @@ async adicionarMembro(@Body() dados: adicionarMembroDTO, @Req() req: any): Promi
             throw error;
         }
     }
-    @Delete("/")
-    async deletarConvite(): Promise<void> {
-        try {
-            await this.membroCasaService.deletarConvite();
-        } catch (error) {
-            throw error;
-        }
-}}
+ }

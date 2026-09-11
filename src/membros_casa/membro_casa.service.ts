@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
 import { adicionarMembroDTO, MembroCasaDTO_Criar } from "./membro_casa.dto";
 import { MembroCasaSchema, MembroCasaSchema_Criar } from "./membro_casa.schema";
 import { supabase } from "../utils/supabase";
@@ -73,16 +73,15 @@ export class MembroCasaService {
 
         const { data, error } = await supabase.from('codigo_convite').insert(payload).single();
         if (!error) {
-            await this.emailService.enviarEmail(emailDestinatario, codigo);
+            try {
+                await this.emailService.enviarEmail(emailDestinatario, codigo);
+            } catch (error) {
+                throw new BadRequestException("Erro ao enviar e-mail2: " + error);
+            }
         }
         if (error) {
             throw error;
         }
         return;
     }
-    async deletarConvite(): Promise<void> {
-        const datehoje = new Date();
-        datehoje.setDate(datehoje.getDate() - 1);
-        console.log(datehoje);
-        await supabase.from("codigo_convite").delete().lt("created_at", datehoje.toISOString());
-}}
+ }

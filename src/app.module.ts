@@ -12,9 +12,13 @@ import { ProdutoDespensaModule } from './produtos-despensa/produto-despensa.modu
 import { HttpSuccessInterceptor } from './filters/http-success.filter';
 import { MembroCasaModule } from './membros_casa/membro_casa.module';
 import { CasaModule } from './casas/casa.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksModule } from './task/task.module';
 
 @Module({
   imports: [
+     ScheduleModule.forRoot(),
+    TasksModule,
     UsuariosModule,
     MembroCasaModule,
     CasaModule,
@@ -25,6 +29,7 @@ import { CasaModule } from './casas/casa.module';
     CategoriaModule,
     LocalArmazenamentoModule,
     ProdutoDespensaModule,
+    
   ],
   controllers: [],
   providers: [
