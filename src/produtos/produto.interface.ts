@@ -1,3 +1,4 @@
+import { Grandeza } from "../Helper/enum";
 
 export interface Produto {
     id: number;
@@ -19,14 +20,6 @@ export enum Categoria {
     LIMPEZA = 'LIMPEZA',
     OUTROS = 'OUTROS',
     AUTO_CUIDADO = 'AUTO_CUIDADO',
-}
-
-export enum Grandeza {
-    UN = 'UN',
-    KG = 'KG',
-    L = 'L',
-    G = 'G',
-    ML = 'ML',
 }
 
 export enum LocalArmazenamento {

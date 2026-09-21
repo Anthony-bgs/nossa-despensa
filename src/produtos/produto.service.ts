@@ -1,9 +1,10 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
-import { Categoria, Grandeza, ListaDeProdutosInterface, Produto } from './produto.interface';
+import { Categoria, ListaDeProdutosInterface, Produto } from './produto.interface';
 import { AtualizarProdutoDTO, FiltroDTO, NovoProdutoDTO } from './produto.dto';
 import { PaginacaoDTO } from '../Helper/paginacaodto';
 import { TAMANHO_PAGINA_PADRAO } from '../Helper/constantes';
 import { supabase } from '../utils/supabase';
+import { Grandeza } from '../Helper/enum';
 
 @Injectable()
 export class ProdutoService {
@@ -11,7 +12,7 @@ export class ProdutoService {
     const payload = {
       nome: dados.nome.toLowerCase(),
       marca: dados.marca.toLowerCase(),
-      grandeza: Grandeza[dados.grandeza],
+      unidade_medida: Grandeza[dados.unidade_medida],
       tamanho_padrao: dados.tamanhoPadrao,
       codigo_barras: dados.codigoBarras,
     };
@@ -91,7 +92,7 @@ export class ProdutoService {
 
     if (dados.nome) payload.nome = dados.nome.toLowerCase();
     if (dados.marca) payload.marca = dados.marca.toLowerCase();
-    if (dados.grandeza && dados.grandeza.toUpperCase() in Grandeza) payload.grandeza = Grandeza[dados.grandeza]; else throw new Error(`Valor inválido para grandeza: ${dados.grandeza}`);
+    if (dados.unidade_medida && dados.unidade_medida.toUpperCase() in Grandeza) payload.unidade_medida = Grandeza[dados.unidade_medida]; else throw new Error(`Valor inválido para unidade de medida: ${dados.unidade_medida}`);
     if (dados.tamanhoPadrao && typeof dados.tamanhoPadrao == "number") payload.tamanho_padrao = dados.tamanhoPadrao; else throw new Error(`tamanho padrão não é um numero`);
     if (Object.keys(payload).length === 0) {
       return await this.buscarProdutoPorId(_id);

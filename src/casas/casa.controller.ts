@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, Param, Post, Req, Request, UseFilters,
 import { HttpExceptionFilter } from "../filters/http-exception.filter";
 import { CasaService } from "./casa.service";
 import { AuthGuard } from "../auth/auth.guard";
-import type { CasaCriarDTO, EntrarComConviteDTO } from "./casa.dto";
+import type { CasaCriarDTO, criacaocompletaDTO, EntrarComConviteDTO } from "./casa.dto";
 
 @Controller('casa')
 @UseFilters(new HttpExceptionFilter())
@@ -34,6 +34,15 @@ export class CasaController {
     async entrarComConvite(@Body() dados: EntrarComConviteDTO, @Req() req: any): Promise<void> {
         try {
             await this.casaService.entrarComConvite(dados.codigo, req.usuario.id);
+        } catch (error) {
+            throw error;
+        }
+    }
+    @Post("/teste-criacao-completa")
+    @UseGuards(AuthGuard)
+    async testeCriacaoCompleta(@Body() dados: criacaocompletaDTO, @Req() req: any): Promise<void> {
+        try {
+            await this.casaService.criacaocompleta(dados, req.usuario.id);
         } catch (error) {
             throw error;
         }

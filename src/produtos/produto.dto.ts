@@ -1,9 +1,10 @@
-import { Categoria, Grandeza, LocalArmazenamento } from './produto.interface';
+import { Grandeza } from '../Helper/enum';
+import { LocalArmazenamento } from './produto.interface';
 
 export interface NovoProdutoDTO {
     nome: string;
     marca: string;
-    grandeza: Grandeza;
+    unidade_medida: Grandeza;
     tamanhoPadrao: number;
     codigoBarras: string;
 }
@@ -11,7 +12,7 @@ export interface NovoProdutoDTO {
 export interface AtualizarProdutoDTO {
     nome?: string;
     marca?: string;
-    grandeza?: Grandeza;
+    unidade_medida?: Grandeza;
     tamanhoPadrao?: number;
     codigoBarras?: string;
     localArmazenamento?: LocalArmazenamento;

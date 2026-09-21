@@ -34,3 +34,10 @@ export enum PrioridadeListaCompra {
     MEDIA = 'MEDIA',
     ALTA = 'ALTA',
 }
+export enum Grandeza {
+    UN = 'UN',
+    KG = 'KG',
+    L = 'L',
+    G = 'G',
+    ML = 'ML',
+}
