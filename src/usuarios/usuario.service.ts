@@ -6,6 +6,7 @@ import { SALT_OR_ROUNDS } from '../Helper/constantes';
 import { supabase } from '../utils/supabase';
 import type { UsuarioAtualizarDto, UsuarioDto } from './usuario.dto';
 import { UsuarioSchema } from './usuario.schema';
+import { PadraoMensagem } from '../utils/padraomensagem';
 
 @Injectable()
 export class UsuariosService {
@@ -154,7 +155,7 @@ export class UsuariosService {
 			.single();
 
 		if (error || !data) {
-			throw error ?? new Error('Erro ao criar usuário via Google');
+			throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
 		}
 
 		return {
