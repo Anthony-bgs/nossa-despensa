@@ -20,8 +20,8 @@ export class HttpSuccessInterceptor implements NestInterceptor {
           statusCode,
           timestamp: new Date().toISOString(),
           path: request.url,
-          message:
-            data?.message ?? 'Operação realizada com sucesso',
+          data:
+            data ?? 'Operação realizada com sucesso',
         };
       }),
     );

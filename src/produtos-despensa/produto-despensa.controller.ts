@@ -3,7 +3,7 @@ import {
 } from '@nestjs/common';
 import { ProdutoDespensaService } from './produto-despensa.service';
 import type {
-  CriarProdutoDespensaDTO,
+  CriarItensDespensaDTO,
   AtualizarProdutoDespensaDTO,
 } from './produto-despensa.dto';
 import type { ProdutoDespensa } from './produto-despensa.interface';
@@ -22,7 +22,7 @@ export class ProdutoDespensaController {
   @Post()
   async criar(
     @Request() req: any,
-    @Body() dados: CriarProdutoDespensaDTO,
+    @Body() dados: CriarItensDespensaDTO,
   ): Promise<ProdutoDespensa> {
     try {
     return await this.produtoDespensaService.criar(dados, req?.usuario?.sub);

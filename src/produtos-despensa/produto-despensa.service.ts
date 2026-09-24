@@ -1,20 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProdutoDespensa } from './produto-despensa.interface';
 import {
-  CriarProdutoDespensaDTO,
   AtualizarProdutoDespensaDTO,
+  CriarItensDespensaDTO,
 } from './produto-despensa.dto';
 import { supabase } from '../utils/supabase';
 import { StatusDespensa } from '../Helper/enum';
 
 @Injectable()
 export class ProdutoDespensaService {
-  async criar(dados: CriarProdutoDespensaDTO, userId: number): Promise<ProdutoDespensa> {
+  async criar(dados: CriarItensDespensaDTO, casaid: number): Promise<ProdutoDespensa> {
     const { data: despensa, error: despensaError } = await supabase
       .from('despensas')
-      .select('id, id_usuario')
+      .select('id, casa_id')
       .eq('id', dados.idDespensa)
-      .eq('id_usuario', userId)
+      .eq('casa_id', casaid)
       .maybeSingle();
 
     if (despensaError) {
@@ -26,14 +26,16 @@ export class ProdutoDespensaService {
     }
 
     const { data, error } = await supabase
-      .from('produtos_despensa')
+      .from('itens_despensa')
       .insert({
-        id_despensa: dados.idDespensa,
-        id_produto: dados.idProduto,
-        id_categoria: dados.idCategoria ?? null,
-        id_local: dados.idLocal ?? null,
-        estoque_total_produto: dados.estoqueTotalProduto ?? 0,
-        status_produto: dados.estoqueTotalProduto && dados.estoqueTotalProduto > 0 ? StatusDespensa.EM_ESTOQUE : StatusDespensa.EM_FALTA,
+        casa_id: casaid,
+        validade: dados.validade ?? null,
+        despensa_id: dados.idDespensa,
+        produto_id: dados.idProduto,
+        categoria_id: dados.idCategoria ?? null,
+        local_armazenamento_id: dados.idLocal ?? null,
+        quantidade: dados.quantidade ?? 0,
+        status: dados.quantidade && dados.quantidade > 0 ? StatusDespensa.EM_ESTOQUE : StatusDespensa.EM_FALTA,
       })
       .select('*')
       .single();
@@ -114,12 +116,12 @@ export class ProdutoDespensaService {
     return this.mapProdutoDespensa(data);
   }
 
-  async remover(userId: number, id: number): Promise<void> {
+  async remover(casaId: number, id: number): Promise<void> {
     const { data: item, error: buscaError } = await supabase
       .from('produtos_despensa')
       .select('id, despensas!inner(id_usuario)')
       .eq('id', id)
-      .eq('despensas.id_usuario', userId)
+      .eq('despensas.id_usuario', casaId)
       .maybeSingle();
 
     if (buscaError) {

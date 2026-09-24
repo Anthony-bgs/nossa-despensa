@@ -10,11 +10,11 @@ import { supabase } from '../utils/supabase';
 export class LocalArmazenamentoService {
   async criar(dados: CriarLocalArmazenamentoDTO): Promise<LocalArmazenamento> {
     const { data, error } = await supabase
-      .from('locais_armazenamento_despensa')
+      .from('locais_armazenamento')
       .insert({
-        local: dados.local,
-        id_despensa: dados.idDespensa,
-        descricao: dados.descricao ?? null,
+        nome: dados.local,
+        despensa_id: dados.idDespensa,
+        observacao: dados.observacao ?? null,
       })
       .select('*')
       .single();

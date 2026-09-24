@@ -6,12 +6,11 @@ import { supabase } from '../utils/supabase';
 @Injectable()
 export class DespensaService {
   async criar(dados: CriarDespensaDTO, idUsuario: number): Promise<Despensa> {
-
     const { data, error } = await supabase
       .from('despensas')
       .insert({
-        usuario_id: idUsuario,
         nome: dados.nome,
+        casa_id: dados.casaId,
       })
       .select('*')
       .single();
@@ -29,12 +28,12 @@ export class DespensaService {
       .select(`
         id,
         nome,
-        id_usuario,
+        usuario_id,
         criado_em,
         produtos_despensa!left(count),
         locais_armazenamento_despensa!left(count)
       `)
-      .eq('id_usuario', idUsuario)
+      .eq('usuario_id', idUsuario)
       .order('criado_em', { ascending: false });
 
     if (error) {
@@ -44,7 +43,7 @@ export class DespensaService {
     return (data ?? []).map((item) => ({
       id: item.id,
       nome: item.nome,
-      idUsuario: item.id_usuario,
+      idUsuario: item.usuario_id,
       criadoEm: item.criado_em,
       quantidadeProdutos: Number(item.produtos_despensa?.[0]?.count ?? 0),
       quantidadeLocaisArmazenamento: Number(
