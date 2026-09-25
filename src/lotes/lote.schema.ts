@@ -1,10 +1,12 @@
-import mongoose from 'mongoose';
-import { Status, StatusValidade } from './lote.interface';
+import { StatusItemDespensa } from "../Helper/enum";
 
-export const LoteSchema = new mongoose.Schema({
-  produto: { type: mongoose.Schema.Types.ObjectId, ref: 'Produto', required: true },
-  quantidade: { type: Number, required: true },
-  validade: { type: Date , required: false, default: null },
-  status: { type: String, default: Status.FECHADO, required: true, enum: Object.values(Status) },
-  statusValidade: { type: String, default: StatusValidade.VALIDO, required: true, enum: Object.values(StatusValidade) }
-}, { timestamps: true });
+export interface Lote {
+  id: number;
+  item_despensa_id: number;
+  quantidade: number;
+  status: StatusItemDespensa;
+  criado_em: Date;
+  validade: Date;
+  comprado_em: string | null;
+  atualizado_em: Date | null;
+}

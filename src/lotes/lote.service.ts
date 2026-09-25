@@ -1,89 +1,240 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Lote, Status, StatusValidade } from './lote.interface';
-import { ProdutoService } from '../produtos/produto.service';
-import { AdicionarLoteDTO, AtualizarLoteDTO } from './lote.dto';
-import { VENCENDO_PADRAO } from '../Helper/constantes';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Lote, LoteSchema, Status, StatusValidade } from './lote.interface';
+import { AdicionarLoteDTO, AtualizarLoteDTO, DeletarLoteDTO } from './lote.dto';
+import { supabase } from '../utils/supabase';
+import { ProdutoDespensaService } from '../produtos-despensa/produto-despensa.service';
 
 @Injectable()
 export class LoteService {
-    constructor(
-        @InjectModel('Lote') private loteModel: Model<Lote>,
-        @Inject(forwardRef(() => ProdutoService))
-        private readonly produtoService: ProdutoService,
-    ) { }
+  constructor(private readonly produtoDespensaService: ProdutoDespensaService) { }
 
-    async adicionarLote(dados: AdicionarLoteDTO, produtoId: string): Promise<Lote> {
-        const produto = await this.produtoService.buscarProdutoPorId(produtoId);
-
-        if (!produto) {
-            throw new NotFoundException('Produto nao encontrado');
-        }
-
-        const novoLote = new this.loteModel({ ...dados, produto: produtoId });
-        const loteSalvo = await novoLote.save();
-        produto.estoqueTotal += dados.quantidade;
-        await this.produtoService.adicionarLote(produtoId, loteSalvo, produto.estoqueTotal);
-        return loteSalvo;
+  async adicionarLote(dados: AdicionarLoteDTO, userId: number): Promise<Lote> {
+    const usuarioconfirmado = await this.produtoDespensaService.confirmarUsuario(dados.idProdutoDespensa, userId);
+    if (!usuarioconfirmado ) {
+      throw new NotFoundException('Produto da despensa não encontrado para este usuário');
+    }
+    const produtoDespensa = await this.buscarProdutoDespensaPorId(dados.idProdutoDespensa);
+    if (!produtoDespensa) {
+      throw new NotFoundException('Produto da despensa não encontrado');
     }
 
-    async atualizarLote(dados: AtualizarLoteDTO, produtoId: string, loteId: string): Promise<void> {
-        const produto = await this.produtoService.buscarProdutoPorId(produtoId);
-        const lote = await this.buscarLotePorId(loteId);
-        if (!produto || !lote) {
-            throw new NotFoundException('Produto ou lote nao encontrado');
-        }
+    const payload = {
+      id_ass_produto_despensa: dados.idProdutoDespensa,
+      quantidade: Number(dados.quantidade ?? 0),
+      validade_produto: dados.validade ? new Date(dados.validade) : null,
+      status_lote: dados.statusLote ?? Status.ABERTO,
+      status_validade: this.calcularStatusValidade(dados.validade ?? null),
+    };
 
-        dados.statusValidade = this.calcularStatusValidade(dados.validade);
-        dados.status = Status[dados.status];
+    const { data, error } = await supabase
+      .from('lotes')
+      .insert(payload)
+      .eq('id_ass_produto_despensa', dados.idProdutoDespensa)
+      .select('*')
+      .single();
 
-        await this.loteModel.updateOne({ _id: loteId }, { $set: dados });
-
-        const estoqueTotal = await this.calcularEstoqueTotalDosLotesPorProdutoId(produtoId);
-
-        await this.produtoService.atualizarEstoqueTotal(produtoId, estoqueTotal);
+    if (error) {
+      throw error;
     }
 
-    async deletarLote(loteId: string): Promise<void> {
-        const lote = await this.buscarLotePorId(loteId);
-        if (!lote) {
-            throw new NotFoundException('Lote não encontrado');
-        }
-        const produto = await this.produtoService.buscarProdutoParaEstoqueTotal(lote.produto);
-        if (!produto) {
-            throw new NotFoundException('Produto não encontrado');
-        }
-        const novoEstoqueTotal = produto.estoqueTotal - lote.quantidade;
-    
-        //Removendo o lote do produto e atualiza o estoque total do produto
-        await this.produtoService.removerLote(produto._id, loteId, novoEstoqueTotal);
-        //Deletando o lote do banco de dados
-        await this.loteModel.deleteOne({ _id: loteId });
+    const loteSalvo = this.mapLote(data);
+    await this.atualizarEstoqueProdutoDespensa(dados.idProdutoDespensa, Number(dados.quantidade ?? 0));
+    return loteSalvo;
+  }
+  async atualizarLote(id: number, dados: AtualizarLoteDTO): Promise<Lote> {
+    const loteExistente = await this.buscarLotePorIdInterno(id);
+    if (!loteExistente) {
+      throw new NotFoundException('Lote não encontrado');
     }
 
-    async buscarLotePorId(loteId: string): Promise<Lote | null> {
-        return await this.loteModel.findById(loteId).exec();
-    }
-    async deletarLotePorProduto(produtoId: string): Promise<void> {
-        await this.loteModel.deleteMany({ produto: produtoId }).exec();
+
+    const payload = {
+      quantidade: dados.quantidade ?? loteExistente.quantidade,
+      validade_produto: dados.validade ? new Date(dados.validade).toISOString() : loteExistente.validade_produto ?? null,
+      status_lote: dados.statusLote ?? loteExistente.status_lote,
+      status_validade:
+        this.calcularStatusValidade(dados.validade ?? loteExistente.validade_produto ?? null),
+    };
+
+    const { data, error } = await supabase
+      .from('lotes')
+      .update(payload)
+      .eq('id', id)
+      .select('*')
+      .single();
+
+    if (error) {
+      throw error;
     }
 
-    async calcularEstoqueTotalDosLotesPorProdutoId(produtoId: string): Promise<number> {
-        const lotes = await this.loteModel.find({ produto: produtoId }).exec();
-        return lotes.reduce((total, lote) => total + lote.quantidade, 0);
+    return this.mapLote(data);
+  }
+
+  async deletarLote(data : DeletarLoteDTO, userId: number): Promise<void> {
+    await this.produtoDespensaService.confirmarUsuario(data.idProdutoDespensa, userId);
+    const lote = await this.buscarLotePorId(data.idLote);
+    if (!lote) {
+      throw new NotFoundException('Lote não encontrado');
     }
 
-    calcularStatusValidade(validade: Date): StatusValidade {
-        const hoje = new Date();
-        const dataValidade = new Date(validade);
-        const diffDias = Math.ceil((dataValidade.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
-        if (diffDias < 0) {
-            return StatusValidade.VENCIDO;
-        } else if (diffDias <= VENCENDO_PADRAO) {
-            return StatusValidade.VENCENDO;
-        } else {
-            return StatusValidade.VALIDO;
-        }
+    const { error } = await supabase
+      .from('lotes')
+      .delete()
+      .eq('id', data.idLote);
+
+    if (error) {
+      throw error;
     }
+
+    await this.atualizarEstoqueProdutoDespensa(lote.id_ass_produto_despensa, -lote.quantidade);
+  }
+
+  async deletarLotePorProduto(idProdutoDespensa: number, idUsuario: number): Promise<void> {
+    await this.produtoDespensaService.confirmarUsuario(idProdutoDespensa, idUsuario);
+    if (!true) {
+      throw new NotFoundException('Produto da despensa não encontrado para este usuário');
+    }
+    const { data: itensProdutoDespensa, error: itensError } = await supabase
+      .from('produtos_despensa')
+      .select('*')
+      .eq('id', idProdutoDespensa);
+
+    if (itensError) {
+      throw itensError;
+    }
+
+    const idsProdutoDespensa = (itensProdutoDespensa ?? []).map((item) => item.id);
+
+    if (idsProdutoDespensa.length === 0) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('lotes')
+      .delete()
+      .in('id_ass_produto_despensa', idsProdutoDespensa);
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  async listarPorProdutoDespensa(idProdutoDespensa: number): Promise<Lote[]> {
+    const { data, error } = await supabase
+      .from('lotes')
+      .select('*')
+      .eq('id_ass_produto_despensa', idProdutoDespensa)
+      .order('criado_em', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []).map((item) => this.mapLote(item));
+  }
+
+  async buscarLotePorId(id: number): Promise<Lote | null> {
+    const { data, error } = await supabase
+      .from('lotes')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return this.mapLote(data);
+  }
+  async buscarLotePorIdInterno(id: number): Promise<LoteSchema | null> {
+    const { data, error } = await supabase
+      .from('lotes')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data;
+  }
+
+  async calcularEstoqueTotalDosLotesPorProdutoDespensa(idProdutoDespensa: number): Promise<number> {
+    const { data, error } = await supabase
+      .from('lotes')
+      .select('quantidade')
+      .eq('id_ass_produto_despensa', idProdutoDespensa);
+
+    if (error) {
+      throw error;
+    }
+    return (data ?? []).reduce((total, lote) => total + lote.quantidade, 0);
+  }
+
+  calcularStatusValidade(validade: Date | string | null): StatusValidade {
+    if (!validade) {
+      return StatusValidade.VALIDO;
+    }
+
+    const hoje = new Date();
+    const dataValidade = new Date(validade);
+    const diffDias = Math.ceil(
+      (dataValidade.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24),
+    );
+
+    if (diffDias < 0) {
+      return StatusValidade.VENCIDO;
+    }
+
+    if (diffDias <= 30) {
+      return StatusValidade.VENCENDO;
+    }
+
+    return StatusValidade.VALIDO;
+  }
+
+  private async buscarProdutoDespensaPorId(id: number): Promise<{ id: number; estoque_total_produto: number } | null> {
+    const { data, error } = await supabase
+      .from('produtos_despensa')
+      .select('id, estoque_total_produto')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data;
+  }
+
+  private async atualizarEstoqueProdutoDespensa(idProdutoDespensa: number, delta: number): Promise<void> {
+    const produtoDespensa = await this.buscarProdutoDespensaPorId(idProdutoDespensa);
+    if (!produtoDespensa) {
+      return;
+    }
+
+    const novoEstoque = Number(produtoDespensa.estoque_total_produto ?? 0) + Number(delta ?? 0);
+
+    const { error } = await supabase
+      .from('produtos_despensa')
+      .update({ estoque_total_produto: novoEstoque })
+      .eq('id', idProdutoDespensa);
+
+    if (error) {
+      throw error;
+    }
+  }
+
+  private mapLote(lote: any): Lote {
+    return {
+      id: lote.id,
+      id_ass_produto_despensa: lote.id_ass_produto_despensa,
+      quantidade: Number(lote.quantidade ?? 0),
+      validade_produto: lote.validade_produto ? new Date(lote.validade_produto).toLocaleDateString('pt-BR') : null,
+      status_lote: lote.status_lote,
+      status_validade: lote.status_validade ?? StatusValidade.VALIDO,
+      criado_em: lote.criado_em,
+    };
+  }
 }

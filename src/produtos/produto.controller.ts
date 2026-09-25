@@ -1,7 +1,6 @@
-import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, Post, Put, Query, Request, UseFilters, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, Logger, NotFoundException, Param, Post, Put, Query, Request, UseFilters, UseGuards } from '@nestjs/common';
 import { ProdutoService } from './produto.service';
 import type { ListaDeProdutosInterface, Produto } from './produto.interface';
-import type mongoose from 'mongoose';
 import type { AtualizarProdutoDTO, FiltroDTO, NovoProdutoDTO } from './produto.dto';
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
 import type { PaginacaoDTO } from '../Helper/paginacaodto';
@@ -13,18 +12,19 @@ import { AuthGuard } from '../auth/auth.guard';
 export class ProdutoController {
   constructor(private readonly produtoService: ProdutoService) { }
 
+  @HttpCode(201)
   @Post('/')
   async novoProduto(@Body() dados: NovoProdutoDTO): Promise<string> {
     try {
       return await this.produtoService.novoProduto(dados);
-    } catch (error: mongoose.Error | any) {
+    } catch (error: any) {
       Logger.error('Erro ao criar produto:', error);
-      throw new BadRequestException(error.message);
+      throw error;
     }
   }
 
-  @Get('/')
-  async buscarTodosProdutos(@Query() query?: Record<string, string>, @Request() request?: any): Promise<ListaDeProdutosInterface> {
+  @Get('/todos')
+  async buscarTodosProdutos(@Query() query?: any): Promise<ListaDeProdutosInterface> {
     try {
       const { limite, pule, pagina, ...filtro } = query ?? {};
 
@@ -34,40 +34,45 @@ export class ProdutoController {
       };
 
       return this.produtoService.buscarTodosProdutos(filtro as Partial<FiltroDTO>, paginacao);
-    } catch (error: mongoose.Error | any) {
+    } catch (error: any) {
       Logger.error('Erro ao buscar produtos:', error);
-      throw new BadRequestException(error.message);
+      throw error;
     }
   }
 
   @Get('/:id')
-  async buscarProdutoPorId(@Param('id') id: string): Promise<Produto | string> {
-    const produto = await this.produtoService.buscarProdutoPorId(id);
+  async buscarProdutoPorId(@Param('id') id: number): Promise<Produto | string> {
+    try {
+      const produto = await this.produtoService.buscarProdutoPorId(id);
     if (!produto) {
       throw new NotFoundException('Produto nao encontrado');
     }
     return produto;
+    } catch (error: any) {
+      Logger.error('Erro ao buscar produto:', error);
+      throw error;
+    }
   }
 
   @Put('/:id')
-  async atualizarProduto(@Body() dados: AtualizarProdutoDTO, @Param('id') id: string): Promise<void> {
+  async atualizarProduto(@Body() dados: AtualizarProdutoDTO, @Param('id') id: number): Promise<void> {
     try {
       await this.produtoService.atualizarProduto(id, dados);
-    } catch (error: mongoose.Error | any) {
+    } catch (error: any) {
       Logger.error('Erro ao atualizar produto:', error);
       throw new BadRequestException(error.message);
     }
   }
 
   @Delete('/:id')
-  async deletarProduto(@Param('id') id: string): Promise<void> {
+  async deletarProduto(@Param('id') id: number): Promise<void> {
     try {
       const produtoDeletado = await this.produtoService.deletarProduto(id);
       if (!produtoDeletado) {
         throw new NotFoundException('Produto nao encontrado');
       }
 
-    } catch (error: mongoose.Error | any) {
+    } catch (error: any) {
       Logger.error('Erro ao deletar produto:', error);
       throw new BadRequestException(error.message);
     }

@@ -1,27 +1,46 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ProdutoModule } from './produtos/produto.module';
 import { LoteModule } from './lotes/lote.module';
-import { APP_FILTER } from '@nestjs/core/constants';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { AuthModule } from './auth/auth.module';
-import { UsuariosModule } from './usuarios/usuarios.module';
-import { MONGO_URI } from './Helper/constantes';
+import { UsuariosModule } from './usuarios/usuario.module';
+import { DespensaModule } from './despensas/despensa.module';
+import { CategoriaModule } from './categorias/categoria.module';
+import { LocalArmazenamentoModule } from './locais-armazenamento/local-armazenamento.module';
+import { ProdutoDespensaModule } from './produtos-despensa/produto-despensa.module';
+import { HttpSuccessInterceptor } from './filters/http-success.filter';
+import { MembroCasaModule } from './membros_casa/membro_casa.module';
+import { CasaModule } from './casas/casa.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksModule } from './task/task.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot(MONGO_URI),
+     ScheduleModule.forRoot(),
+    TasksModule,
+    UsuariosModule,
+    MembroCasaModule,
+    CasaModule,
     ProdutoModule,
     LoteModule,
     AuthModule,
-    UsuariosModule,
+    DespensaModule,
+    CategoriaModule,
+    LocalArmazenamentoModule,
+    ProdutoDespensaModule,
+    
   ],
   controllers: [],
   providers: [
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
-    }
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpSuccessInterceptor,
+    },
   ],
 })
 export class AppModule { }

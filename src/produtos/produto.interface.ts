@@ -1,20 +1,16 @@
-
-import { Imagem } from "../imagens/imagem.interface";
-import { Lote } from "../lotes/lote.interface";
+import { Grandeza } from "../Helper/enum";
 
 export interface Produto {
+    id: number;
     nome: string;
     marca: string;
-    categoria: Categoria;
-    grandeza: Grandeza;
-    tamanhoPadrao: number;
-    codigoBarras: string;
-    localArmazenamento: LocalArmazenamento;
-    status: Status
-    estoqueTotal: number;
-    lotes: Lote[];
-    images: Imagem[];
-    _id: string;
+    categoria?: Categoria | string | null;
+    grandeza?: Grandeza | string | null;
+    tamanhoPadrao?: number | null;
+    codigoBarras?: string | null;
+    localArmazenamento?: LocalArmazenamento | string | null;
+    estoqueTotal?: number | null;
+    criadoEm?: string | Date | null;
 }
 
 export enum Categoria {
@@ -24,14 +20,6 @@ export enum Categoria {
     LIMPEZA = 'LIMPEZA',
     OUTROS = 'OUTROS',
     AUTO_CUIDADO = 'AUTO_CUIDADO',
-}
-
-export enum Grandeza {
-    UNIDADE = 'UNIDADE',
-    KILOGRAMA = 'KILOGRAMA',
-    LITRO = 'LITRO',
-    GRAMA = 'GRAMA',
-    MILILITRO = 'MILILITRO',
 }
 
 export enum LocalArmazenamento {
@@ -50,12 +38,8 @@ export enum LocalArmazenamento {
     GUARDA_ROUPA = 'GUARDA_ROUPA',
 }
 
-export enum Status {
-    EM_FALTA = 'EM_FALTA',
-    EM_ESTOQUE = 'EM_ESTOQUE',
-}
-
 export interface ListaDeProdutosInterface {
+    totalProdutos: number;
     produtos: Produto[];
     paginacao: {
         total: number;

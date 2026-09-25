@@ -1,13 +1,19 @@
-import { Status, StatusValidade } from "./lote.interface";
+import { Status, StatusValidade } from './lote.interface';
 
 export interface AdicionarLoteDTO {
-    quantidade: number;
-    validade: Date;
+  idProdutoDespensa: number;
+  quantidade: number;
+  validade: Date;
+  statusLote ?: Status;
 }
 
 export interface AtualizarLoteDTO {
-    quantidade: number;
-    validade: Date;
-    statusValidade: StatusValidade;
-    status: Status;
+  quantidade?: number;
+  validade?: Date;
+  statusLote?: Status;
+}
+
+export interface DeletarLoteDTO {
+  idProdutoDespensa: number;
+  idLote: number;
 }
