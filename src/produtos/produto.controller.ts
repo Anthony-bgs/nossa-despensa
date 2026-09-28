@@ -5,6 +5,7 @@ import type { AtualizarProdutoDTO, FiltroDTO, NovoProdutoDTO } from './produto.d
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
 import type { PaginacaoDTO } from '../Helper/paginacaodto';
 import { AuthGuard } from '../auth/auth.guard';
+import { PadraoMensagem } from '../utils/padraomensagem';
 
 @UseGuards(AuthGuard)
 @Controller('produtos')

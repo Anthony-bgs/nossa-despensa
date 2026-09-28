@@ -229,8 +229,487 @@ export const swaggerDocument: OpenAPIObject = {
                     "statusCode": { "type": "integer", "example": 500 },
                     "timestamp": { "type": "string", "format": "date-time" },
                     "path": { "type": "string", "example": "/auth/google/callback" },
-                    "message": { "type": "string", "example": PadraoMensagem.ERRO_INTERNO }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/casa/": {
+      "post": {
+        "tags": ["casa"],
+        "summary": "Criar uma nova casa",
+        "description": "Cria uma nova casa no sistema. O usuarioID e obtido automaticamente do token JWT enviado no header Authorization; portanto, nao deve ser informado no corpo da requisicao.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["nome", "descricao"],
+                "properties": {
+                  "nome": { "type": "string", "example": "Minha Casa" },
+                  "descricao": { "type": "string", "example": "Casa de exemplo" },
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Casa criada com sucesso.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 201,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/casa/",
+                  "data": "Operacao realizada com sucesso"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados da casa invalidos.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 400,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/casa/",
+                  "message": PadraoMensagem.ERRO_DADOS_INVALIDOS + " ou " + PadraoMensagem.ERRO_DADOS_INCOMPLETOS
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token JWT invalido ou nao fornecido.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 401,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/casa/",
+                  "message": "Acesso negado"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno ao criar a casa.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 500,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/casa/",
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/casa/minha-casa": {
+      "get": {
+        "tags": ["casa"],
+        "summary": "Obter informações da casa do usuário",
+        "description": "Retorna as informações da casa do usuário logado. O usuarioID é obtido automaticamente do token JWT enviado no header Authorization; ",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "codigoconvite": { "type": "string", "example": "ABC123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Informações da casa obtidas com sucesso.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 200,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/casa/minha-casa",
+                  "data": {
+                    "id": 1,
+                    "nome": "Minha Casa",
+                    "descricao": "Casa de exemplo",
+                    "criado por": 1,
+                    "atualizado em": "2026-09-25T12:00:00.000Z",
+                    "criado em": "2026-09-25T12:00:00.000Z",
+                    "membros": [
+                      {
+                        "id": 1,
+                        "nome": "João",
+                        "email": "joao@example.com",
+                        "foto": "https://example.com/foto.jpg",
+                        "papel": "dono",
+                        "status": "ativo"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token JWT invalido ou nao fornecido.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 401,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/casa/minha-casa",
+                  "message": PadraoMensagem.ERRO_ACESSO_NEGADO
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 500,
+                  "timestamp": '2026-09-25T12:00:00.000Z',
+                  "path": '/casa/minha-casa',
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Casa do usuário não encontrada.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 404,
+                  "timestamp": '2026-09-25T12:00:00.000Z',
+                  "path": '/casa/minha-casa',
+                  "message": PadraoMensagem.ERRO_NAO_ENCONTRADO
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/casa/entrar-convite": {
+      "post": {
+        "tags": ["casa"],
+        "summary": "Entrar em uma casa através de um convite",
+        "description": "Permite que um usuário entre em uma casa existente através de um convite, as informações do usuário são obtidas automaticamente do token JWT enviado no header Authorization; portanto, não devem ser informadas no corpo da requisição.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "conviteId": { "type": "string", "description": "ID do convite" }
+                },
+                "required": ["conviteId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário entrou na casa com sucesso.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 200,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/casa/entrar-convite",
+                  "data": { }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Convite não encontrado.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 404,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/casa/entrar-convite",
+                  "message": PadraoMensagem.ERRO_NAO_ENCONTRADO
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro interno do servidor.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 400,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/casa/entrar-convite",
+                  "message": PadraoMensagem.ERRO_INTERNO
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 500,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/casa/entrar-convite",
+                }
+              }
+            }
+          }
+        }
+      },
+    },
+      "/casa/criacao-completa": {
+        "post": {
+          "tags": ["fluxo completo"],
+          "summary": "fluxo completo de criação",
+          "description": "Cria uma nova casa, despensa, local de armazenamento e adiciona produtos. O usuarioID é obtido automaticamente do token JWT enviado no header Authorization; portanto, não deve ser informado no corpo da requisição.",
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["casa", "itens"],
+                  "properties": {
+                    "casa": { "type": "string", "example": "Minha Casa" },
+                    "itens": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "despensa": { "type": "string", "example": "Minha Despensa" },
+                          "prateleira": { "type": "string", "example": "Minha Prateleira" },
+                          "produtos": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "required": ["id", "itemDespensa"],
+                              "properties": {
+                                "id": { "type": "integer", "example": 1 },
+                                "itemDespensa": {
+                                  "type": "object",
+                                  "required": ["quantidade", "validade", "categoria"],
+                                  "properties": {
+                                    "quantidade": { "type": "number", "example": 2 },
+                                    "validade": { "type": "string", "format": "date", "example": "2026-12-31" },
+                                    "categoria": { "type": "integer", "example": 1 }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Casa, despensa, local de armazenamento e produtos criados com sucesso.",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "statusCode": 201,
+                    "timestamp": "2026-09-25T12:00:00.000Z",
+                    "path": "/casa/criacao-completa",
+                    "data": "Operacao realizada com sucesso"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Dados inválidos ou falha ao criar algum recurso.",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "statusCode": 400,
+                    "timestamp": "2026-09-25T12:00:00.000Z",
+                    "path": "/casa/criacao-completa",
+                    "message": PadraoMensagem.ERRO_DADOS_INVALIDOS
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Token JWT inválido ou não fornecido.",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "statusCode": 401,
+                    "timestamp": "2026-09-25T12:00:00.000Z",
+                    "path": "/casa/criacao-completa",
+                    "message": PadraoMensagem.ERRO_ACESSO_NEGADO
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Erro interno do servidor.",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "statusCode": 500,
+                    "timestamp": "2026-09-25T12:00:00.000Z",
+                    "path": "/casa/criacao-completa",
+                    "message": PadraoMensagem.ERRO_INTERNO
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+    "/categoria/": {
+      "post": {
+        "tags": ["categoria"],
+        "summary": "Criar uma nova categoria",
+        "description": "Cria uma nova categoria no sistema.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["nome"],
+                "properties": {
+                  "nome": { "type": "string", "example": "Bebidas" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Categoria criada com sucesso.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 201,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/categoria/",
+                  "data": {
+                    "id": 1,
+                    "nome": "Bebidas",
+                    "criadoEm": "2026-09-25T12:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos ou falha ao criar a categoria.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 400,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/categoria/",
+                  "message": PadraoMensagem.ERRO_INTERNO
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token JWT inválido ou não fornecido.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 401,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/categoria/",
+                  "message": PadraoMensagem.ERRO_ACESSO_NEGADO
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 500,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/categoria/",
+                  "message": PadraoMensagem.ERRO_INTERNO
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["categoria"],
+        "summary": "Listar categorias",
+        "description": "Lista todas as categorias no sistema.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Categorias listadas com sucesso.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 200,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/categoria/",
+                  "data": [
+                    {
+                      "id": 1,
+                      "nome": "Bebidas",
+                      "criadoEm": "2026-09-25T12:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token JWT inválido ou não fornecido.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 401,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/categoria/",
+                  "message": PadraoMensagem.ERRO_ACESSO_NEGADO
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "statusCode": 500,
+                  "timestamp": "2026-09-25T12:00:00.000Z",
+                  "path": "/categoria/",
+                  "message": PadraoMensagem.ERRO_INTERNO
                 }
               }
             }

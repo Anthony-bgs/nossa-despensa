@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ProdutoDespensa } from './produto-despensa.interface';
 import {
   AtualizarProdutoDespensaDTO,
@@ -6,6 +6,7 @@ import {
 } from './produto-despensa.dto';
 import { supabase } from '../utils/supabase';
 import { StatusDespensa } from '../Helper/enum';
+import { PadraoMensagem } from '../utils/padraomensagem';
 
 @Injectable()
 export class ProdutoDespensaService {
@@ -41,7 +42,7 @@ export class ProdutoDespensaService {
       .single();
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return this.mapProdutoDespensa(data);

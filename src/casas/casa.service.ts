@@ -1,5 +1,5 @@
-import { ConflictException, forwardRef, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { CasaCriarDTO, criacaocompletaDTO } from "./casa.dto";
+import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { CasaCriarDTO, CriacaoCompletaDTO } from "./casa.dto";
 import { CasaSchema, CasaSchema_Criar, } from "./casa.schema";
 import { supabase } from "../utils/supabase";
 import { Casa } from "./casa.interface";
@@ -10,6 +10,8 @@ import { ProdutoService } from "../produtos/produto.service";
 import { LocalArmazenamentoService } from "../locais-armazenamento/local-armazenamento.service";
 import { ProdutoDespensaService } from "../produtos-despensa/produto-despensa.service";
 import { DespensaService } from "../despensas/despensa.service";
+import { PadraoMensagem } from "../utils/padraomensagem";
+
 
 @Injectable()
 export class CasaService {
@@ -27,6 +29,9 @@ export class CasaService {
     ) { }
 
     async criar(dados: CasaCriarDTO, usuarioId: number): Promise<number> {
+        if (!dados.nome || dados.nome.trim() === '') {
+            throw new BadRequestException(PadraoMensagem.ERRO_DADOS_INCOMPLETOS + " ou " + PadraoMensagem.ERRO_DADOS_INVALIDOS);
+        }
         const payload: CasaSchema_Criar = {
             nome: dados.nome,
             usuario_id: usuarioId,
@@ -34,17 +39,17 @@ export class CasaService {
         };
 
         const { data, error } = await supabase.from('casas').insert(payload).select("id").single<CasaSchema>();
-
         if (error) {
-            throw error;
+            Logger.error('Erro ao criar casa:', error);
+            throw new BadRequestException(PadraoMensagem.ERRO_AO_CADASTRAR);
         }
 
-      await this.membroCasaService.criar({
+        await this.membroCasaService.criar({
             casaId: data.id!,
             usuarioId: usuarioId,
         });
         return data.id!;
-      
+
     }
 
     async minhaCasa(usuarioId: number): Promise<any> {
@@ -59,22 +64,25 @@ export class CasaService {
             throw new NotFoundException(Mensagens.CASA_NAO_ENCONTRADA);
         }
 
-        const casa = await supabase.from('casas')
+        const {data:casa, error} = await supabase.from('casas')
             .select(`id, nome, descricao, usuario_id`)
             .eq('id', identificandoCasa.data.casa_id)
             .single<CasaSchema>();
 
-        if (casa.error || !casa.data) {
-            Logger.debug(casa.error);
+        if (!casa) {
             throw new NotFoundException(Mensagens.CASA_NAO_ENCONTRADA);
+        }
+        if (error) {
+            Logger.error('Erro ao buscar casa:', error);
+            throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
         }
 
         // BUSCANDO OS DADOS DOS MEMBROS DA CASA
-        const membros = await this.membroCasaService.buscarMembrosPorCasa(casa.data.id!);
+        const membros = await this.membroCasaService.buscarMembrosPorCasa(casa.id!);
 
 
         return {
-            casa: this.mapCasaSchemaToCasa(casa.data),
+            casa: this.mapCasaSchemaToCasa(casa),
             membros
         };
     }
@@ -82,8 +90,11 @@ export class CasaService {
         try {
             const { data, error } = await supabase.from("codigo_convite").select("casa_id").eq("codigo", codigoconvite).single();
 
-            if (error && !data) {
+            if (!data) {
                 throw new NotFoundException("convite não encontrado");
+            }
+            if (error) {
+                throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
             }
 
             await this.membroCasaService.criar({
@@ -93,7 +104,7 @@ export class CasaService {
                 status: StatusMembroCasa.ACEITO,
             });
         } catch (error) {
-            throw error;
+            throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
         }
     }
     async validarCasa(casaId: number, usuarioId: number): Promise<boolean> {
@@ -105,6 +116,9 @@ export class CasaService {
         if (!data) {
             throw new NotFoundException(Mensagens.CASA_NAO_ENCONTRADA);
         }
+        if (error) {
+            throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
+        }
         return true;
     }
     async conferiremailconvite(emailDestinatario: string, casaId: number): Promise<boolean> {
@@ -112,39 +126,39 @@ export class CasaService {
         if (data) {
             throw new ConflictException(Mensagens.USUARIO_JA_EXISTE_NA_CASA);
         }
+        if (error) {
+            throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
+        }   
         return true;
     }
-    async criacaocompleta(dados: criacaocompletaDTO, usuarioId: number): Promise<void> {
+    async criacaocompleta(dados: CriacaoCompletaDTO, usuarioId: number): Promise<void> {
+        if (!dados) {
+            throw new BadRequestException(Mensagens.DADOS_INVALIDOS);
+        }
         try {
             const casa = await this.criar({ nome: dados.casa }, usuarioId);
-           const despensa = await this.despensaService.criar({nome: dados.despensa, casaId: casa  },usuarioId);
-            const depensaid = despensa.id;
-            const localArmazenamento = await this.localArmazenamentoService.criar({
-                local: dados.prateleira,
-                idDespensa: depensaid,});
-            for (const produto of dados.produtos) {
-                const produtoId = await this.produtoDespensaService.criar({
-                    idDespensa: depensaid,
-                    idProduto: produto.id,
-                    idCategoria: produto.itemDespensa.categoria,
-                    idLocal: localArmazenamento.id,
-                    quantidade: produto.itemDespensa.quantidade,
-                    validade: produto.itemDespensa.validade,
-                    casaId: casa,
-                }, casa);
+            for (const item of dados.itens) {
+                const despensa = await this.despensaService.criar({ nome: item.despensa, casaId: casa }, usuarioId);
+                const localArmazenamento = await this.localArmazenamentoService.criar({
+                    local: item.prateleira,
+                    idDespensa: despensa.id,
+                });
+                for (const produto of item.produtos) {
+                    const produtoId = await this.produtoDespensaService.criar({
+                        idDespensa: despensa.id,
+                        idProduto: produto.id,
+                        idCategoria: produto.itemDespensa.categoria,
+                        idLocal: localArmazenamento.id,
+                        quantidade: produto.itemDespensa.quantidade,
+                        validade: produto.itemDespensa.validade,
+                        casaId: casa,
+                    }, casa);
+                }
             }
-            
-            ;
         } catch (error) {
             throw error;
         }
-
-
-       
-    
-        return
     }
-
 
     private mapCasaSchemaToCasa(casa: CasaSchema): Casa {
         return {
@@ -157,4 +171,5 @@ export class CasaService {
         };
     }
 }
+
 

@@ -9,10 +9,14 @@ export interface CasaCriarDTO {
 export interface EntrarComConviteDTO {
 	codigo: string;
 }
-export interface criacaocompletaDTO {
+export interface CriacaoCompletaDTO {
+	casa: string;
+	itens: [Itens];
+
+}
+export interface Itens {
 	//despensa
 	despensa: string;
-	casa: string;
 	//localdearmazenamento
 	prateleira: string;
 	//produto

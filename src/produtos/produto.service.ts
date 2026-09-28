@@ -38,18 +38,20 @@ export class ProdutoService {
     const { limite, pule } = this.configurarPaginacao(paginacao);
 
     let query = supabase
-           .from('produtos')
-      .select ('*', { count: 'exact' });
+      .from('produtos')
+      .select('*', { count: 'exact' });
     if (codigoBarras) {
       query = query.eq('codigo_barras', codigoBarras);
+    } else {
+      if (nome) {
+        query = query.ilike('nome', `%${nome}%`);
+      }
+      if (marca) {
+        query = query.ilike('marca', `%${marca}%`);
+      }
     }
 
-    if (nome) {
-      query = query.ilike('nome', `%${nome}%`);
-    }
-    if (marca) {
-      query = query.ilike('marca', `%${marca}%`);
-    }
+
 
     const { data, error, count } = await query
       .order('id', { ascending: true })
