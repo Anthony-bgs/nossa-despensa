@@ -27,32 +27,17 @@ export class CategoriaController {
 
   @Post()
   async criar(@Body() dados: CriarCategoriaDTO): Promise<Categoria> {
-    try {
     return await this.categoriaService.criar(dados);
-    } catch (error) {
-      throw error;
-    }
   }
 
   @Get()
   async listar(@Body() dados: BuscarCategoriaDTO): Promise<Categoria[]> {
-    try { 
     return await this.categoriaService.listar(dados);
-    } catch (error) {
-      throw error;
-  }
   }
 
   @Get(':id')
-  async buscarPorId(@Param('id', ParseIntPipe) id: number): Promise<Categoria | null> {
-    try {
-      const categoria = await this.categoriaService.buscarPorId(id);
-      return categoria;
-
-    } catch (error: any) {
-      Logger.error('Erro ao criar produto:', error);
-      throw new BadRequestException(error.message);
-    }
+  async buscarPorId(@Param ('id', ParseIntPipe) id: number): Promise<Categoria | null> {
+      return await this.categoriaService.buscarPorId(id);
   }
 
   @Put(':id')
@@ -60,21 +45,11 @@ export class CategoriaController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dados: AtualizarCategoriaDTO,
   ): Promise<string> {
-    try {
        return await this.categoriaService.atualizar(id, dados);
-    } catch (error) {
-      throw error;
-    }
   }
 
   @Delete(':id')
   async remover(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    try {
       await this.categoriaService.remover(id);
-    }
-    catch (error: any) {
-      Logger.error('Erro ao criar produto:', error);
-      throw new BadRequestException(error.message);
-    }
   }
 }

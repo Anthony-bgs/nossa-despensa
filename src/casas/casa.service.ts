@@ -40,7 +40,6 @@ export class CasaService {
 
         const { data, error } = await supabase.from('casas').insert(payload).select("id").single<CasaSchema>();
         if (error) {
-            Logger.error('Erro ao criar casa:', error);
             throw new BadRequestException(PadraoMensagem.ERRO_AO_CADASTRAR);
         }
 
@@ -59,9 +58,11 @@ export class CasaService {
             .eq('usuario_id', usuarioId)
             .single<{ casa_id: number }>();
 
-        if (identificandoCasa.error || !identificandoCasa.data) {
-            Logger.debug(identificandoCasa.error);
-            throw new NotFoundException(Mensagens.CASA_NAO_ENCONTRADA);
+        if (identificandoCasa.error) {
+            throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
+        }
+        if (!identificandoCasa.data) {
+           throw new NotFoundException(PadraoMensagem.ERRO_NAO_ENCONTRADO);
         }
 
         const {data:casa, error} = await supabase.from('casas')
@@ -70,10 +71,9 @@ export class CasaService {
             .single<CasaSchema>();
 
         if (!casa) {
-            throw new NotFoundException(Mensagens.CASA_NAO_ENCONTRADA);
+            throw new NotFoundException(PadraoMensagem.ERRO_NAO_ENCONTRADO);
         }
         if (error) {
-            Logger.error('Erro ao buscar casa:', error);
             throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
         }
 

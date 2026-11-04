@@ -10,3 +10,9 @@ export interface Despensa {
   quantidadeLocaisArmazenamento?: number;
   locaisArmazenamentoDespensa?: LocalArmazenamento[];
 }
+
+export interface DespensaCasa {
+  nome: string;
+  quantidadeProdutos:number;
+  quantidadeLocaisArmazenamento:number;
+}

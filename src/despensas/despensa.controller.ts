@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { DespensaService } from './despensa.service';
 import type { CriarDespensaDTO, AtualizarDespensaDTO } from './despensa.dto';
-import type { Despensa } from './despensa.interface';
+import type { Despensa, DespensaCasa } from './despensa.interface';
 import { AuthGuard } from '../auth/auth.guard';
 import { HttpExceptionFilter } from '../filters/http-exception.filter';
 
@@ -23,29 +23,24 @@ import { HttpExceptionFilter } from '../filters/http-exception.filter';
 @Controller('despensas')
 @UseFilters(new HttpExceptionFilter())
 export class DespensaController {
-  constructor(private readonly despensaService: DespensaService) { }
+  constructor(private readonly despensaService: DespensaService) {}
 
-  @Post("usuario")
-  async criar(@Body() dados: CriarDespensaDTO, @Request() req: any): Promise<Despensa> {
-    try {
-      return await this.despensaService.criar(dados, req?.usuario?.sub);
-    } catch (error: any) {
-      Logger.error('Erro ao criar despensa:', error);
-      throw new BadRequestException(error.message);
-    }
+  @Post('')
+  async criar(
+    @Body() dados: CriarDespensaDTO,
+    @Request() req: any,
+  ): Promise<Despensa> {
+    return await this.despensaService.criar(dados, req?.usuario?.sub);
   }
-
-  @Get('usuario')
-  async listarPorUsuario(@Request() req: any): Promise<Despensa[]> {
-    try {
-    return await this.despensaService.listarPorUsuario(req?.usuario?.sub);
-    } catch (error) {
-      throw error;
-    }
+  @Get('/casa/:idcasa')
+  async DespensaPorCasa(
+    @Param('idcasa', ParseIntPipe) idCasa: number,
+    @Request() req: any,
+  ): Promise<DespensaCasa[]> {
+    return await this.despensaService.DespensaPorCasa(idCasa, req?.usuario?.id);
   }
-
   @Get(':id')
-  async buscarPorId(@Param('id', ParseIntPipe, ) id: number): Promise<Despensa> {
+  async buscarPorId(@Param('id', ParseIntPipe) id: number): Promise<Despensa> {
     const despensa = await this.despensaService.buscarPorId(id);
     if (!despensa) {
       throw new Error('Despensa não encontrada');
@@ -68,7 +63,7 @@ export class DespensaController {
   @Delete(':id')
   async remover(@Param('id', ParseIntPipe) id: number): Promise<void> {
     try {
-    await this.despensaService.remover(id);
+      await this.despensaService.remover(id);
     } catch (error) {
       throw error;
     }

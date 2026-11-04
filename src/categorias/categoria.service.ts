@@ -21,13 +21,15 @@ export class CategoriaService {
   }
 
   async listar(dados: BuscarCategoriaDTO): Promise<Categoria[]> {
-    const { nome } = dados ?? {};
-    let query = supabase.from('categorias').select('*').order('nome', { ascending: true });
-    if (nome) {
-      query = query.ilike('nome', `%${nome}%`);
+    const { data, error } = await supabase
+      .from('categorias')
+      .select('*')
+      .ilike('nome', `%${dados.nome ?? ''}%`);
+      
+    if (error) {
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
-    const { data, error } = await query;
-    if (error) { throw error; }
+
     return (data ?? []).map((item) => this.mapCategoria(item));
   }
 
@@ -38,8 +40,11 @@ export class CategoriaService {
       .eq('id', id)
       .single();
 
-    if (error || !data) {
-      throw new Error(PadraoMensagem.ERRO_NAO_ENCONTRADO);
+    if (error) {
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
+    }
+    if (!data) {
+      throw new NotFoundException(PadraoMensagem.ERRO_NAO_ENCONTRADO);
     }
     return this.mapCategoria(data);
   }
@@ -47,18 +52,18 @@ export class CategoriaService {
   async atualizar(id: number, dados: AtualizarCategoriaDTO): Promise<string> {
     const categoriaExistente = await this.buscarPorId(id);
     if (!categoriaExistente) {
-      throw new NotFoundException('Categoria não encontrada');
+      throw new NotFoundException(PadraoMensagem.ERRO_NAO_ENCONTRADO);
     }
 
     const { data, error } = await supabase
       .from('categorias')
-      .update({ nome: dados.nome ?? categoriaExistente.nome })
+      .update({ nome: dados.nome })
       .eq('id', id)
       .select('id')
       .single();
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return PadraoMensagem.SUCESSO_ATUALIZACAO;
@@ -67,7 +72,7 @@ export class CategoriaService {
   async remover(id: number): Promise<void> {
     const categoria = await this.buscarPorId(id);
     if (!categoria) {
-      throw new NotFoundException('Categoria não encontrada');
+      throw new NotFoundException(PadraoMensagem.ERRO_NAO_ENCONTRADO);
     }
 
     const { error } = await supabase
@@ -76,7 +81,7 @@ export class CategoriaService {
       .eq('id', id);
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
   }
 
