@@ -14,4 +14,5 @@ export interface adicionarMembroDTO {
 export interface convidarMembroDTO {
     casaId: number;
     emailDestinatario: string;
+    telefoneDestinatario?: string;
 }

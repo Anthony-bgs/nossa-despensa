@@ -8,6 +8,7 @@ import { adicionarMembroDTO, MembroCasaDTO_Criar } from './membro_casa.dto';
 import { MembroCasaSchema, MembroCasaSchema_Criar } from './membro_casa.schema';
 import { supabase } from '../utils/supabase';
 import { EmailService } from '../mensagem/email.service';
+import { ZapService } from '../mensagem/zap.service';
 import { CasaService } from '../casas/casa.service';
 import { PadraoMensagem } from '../utils/padraomensagem';
 
@@ -15,6 +16,7 @@ import { PadraoMensagem } from '../utils/padraomensagem';
 export class MembroCasaService {
   constructor(
     private readonly emailService: EmailService,
+    private readonly zapService: ZapService,
     @Inject(forwardRef(() => CasaService))
     private readonly casaService: CasaService,
   ) {}
@@ -76,38 +78,45 @@ export class MembroCasaService {
       .single<MembroCasaSchema>();
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
   }
   async convidarMembro(
-    casaId: number,
-    emailDestinatario: string,
+    dados: { casaId: number; emailDestinatario: string; telefoneDestinatario?: string },
     usuarioId: number,
   ): Promise<void> {
-    await this.casaService.validarCasa(casaId, usuarioId);
-    await this.casaService.conferiremailconvite(emailDestinatario, casaId);
+    await this.casaService.validarCasa(dados.casaId, usuarioId);
+    await this.casaService.conferiremailconvite(dados.emailDestinatario, dados.casaId);
     const codigo = Math.floor(100000 + Math.random() * 900000)
       .toString()
       .substring(0, 6);
     const payload = {
-      casa_id: casaId,
+      casa_id: dados.casaId,
       usuario_id: usuarioId,
       codigo: codigo,
     };
-
     const { data, error } = await supabase
       .from('codigo_convite')
       .insert(payload)
       .single();
-    if (!error) {
-      try {
-        await this.emailService.enviarEmail(emailDestinatario, codigo);
-      } catch (error) {
-        throw new BadRequestException('Erro ao enviar e-mail2: ' + error);
-      }
-    }
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
+    }
+    if (dados.telefoneDestinatario) {
+      try {
+        await this.zapService.enviarMensagemZap(
+          dados.telefoneDestinatario,
+          codigo,
+        );
+      } catch (error) {
+        throw new BadRequestException('Erro ao enviar WhatsApp: ' + error);
+      }
+    } else {
+      try {
+        await this.emailService.enviarEmail(dados.emailDestinatario, codigo);
+      } catch (error) {
+        throw new BadRequestException('Erro ao enviar e-mail: ' + error);
+      }
     }
     return;
   }

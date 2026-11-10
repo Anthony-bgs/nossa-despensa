@@ -122,13 +122,20 @@ export class CasaService {
         return true;
     }
     async conferiremailconvite(emailDestinatario: string, casaId: number): Promise<boolean> {
-        const { data, error } = await supabase.from('usuarios').select('id,membros_casa!inner(usuario_id)').eq('email', emailDestinatario).single();
-        if (data) {
-            throw new ConflictException(Mensagens.USUARIO_JA_EXISTE_NA_CASA);
-        }
+        const { data, error } = await supabase
+            .from('usuarios')
+            .select('id, membros_casa!inner(casa_id)')
+            .eq('email', emailDestinatario.trim())
+            .eq('membros_casa.casa_id', casaId)
+            .limit(1);
+
         if (error) {
             throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
-        }   
+        }
+        if (data.length > 0) {
+            throw new ConflictException(Mensagens.USUARIO_JA_EXISTE_NA_CASA);
+        }
+
         return true;
     }
     async criacaocompleta(dados: CriacaoCompletaDTO, usuarioId: number): Promise<void> {
@@ -171,5 +178,4 @@ export class CasaService {
         };
     }
 }
-
 
