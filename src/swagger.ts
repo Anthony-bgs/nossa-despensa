@@ -41,6 +41,10 @@ export const swaggerDocument: OpenAPIObject = {
       name: 'lote',
       description: 'Operações relacionadas aos lotes e estoque.',
     },
+    {
+      name: 'membros-casa',
+      description: 'Operações relacionadas aos membros das casas.',
+    },
   ],
   components: {
     securitySchemes: {
@@ -2330,6 +2334,241 @@ export const swaggerDocument: OpenAPIObject = {
           '500': {
             description: 'Erro interno do servidor.',
           },
+        },
+      },
+    },
+    '/membros-casa/convidar-membro': {
+      post: {
+        tags: ['membros-casa'],
+        summary: 'Convidar um novo membro para a casa',
+        description:
+          'Envia um código de convite por email ou WhatsApp para um novo membro da casa.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['casaId', 'emailDestinatario'],
+                properties: {
+                  casaId: { type: 'integer', example: 1 },
+                  emailDestinatario: {
+                    type: 'string',
+                    format: 'email',
+                    example: 'usuario@example.com',
+                  },
+                  telefoneDestinatario: {
+                    type: 'string',
+                    example: '+5511999999999',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Convite enviado com sucesso.',
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+          },
+          '500': {
+            description: 'Erro interno do servidor.',
+          },
+        },
+      },
+    },
+    '/produtos/': {
+      post: {
+        tags: ['produtos'],
+        summary: 'Criar um novo produto',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: [
+                  'nome',
+                  'marca',
+                  'unidade de medida',
+                  'tamanhoPadrao',
+                  'codigoBarras',
+                ],
+                properties: {
+                  nome: { type: 'string', example: 'Arroz' },
+                  marca: { type: 'string', example: 'Tio Joao' },
+                  'unidade de medida': { type: 'string', example: 'kg' },
+                  tamanhoPadrao: { type: 'number', example: 5 },
+                  codigoBarras: { type: 'string', example: '1234567890123' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Produto criado com sucesso.' },
+          '400': { description: 'Dados do produto invalidos.' },
+          '401': { description: 'Token JWT invalido ou nao fornecido.' },
+        },
+      },
+    },
+    '/produtos/{id}': {
+      get: {
+        tags: ['produtos'],
+        summary: 'Buscar produto por ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': { description: 'Produto encontrado.' },
+          '401': { description: 'Token JWT invalido.' },
+          '404': { description: 'Produto nao encontrado.' },
+        },
+      },
+      delete: {
+        tags: ['produtos'],
+        summary: 'Excluir produto por ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': { description: 'Produto excluido.' },
+          '401': { description: 'Token JWT invalido.' },
+          '404': { description: 'Produto nao encontrado.' },
+        },
+      },
+    },
+    '/produtos-despensa/': {
+      get: {
+        tags: ['produtos-despensa'],
+        summary: 'Listar produtos da despensa',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': { description: 'Lista retornada com sucesso.' },
+          '401': { description: 'Token JWT invalido.' },
+        },
+      },
+      post: {
+        tags: ['produtos-despensa'],
+        summary: 'Adicionar produto a despensa',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['casaid', 'iddespensa', 'idproduto', 'idcategoria'],
+                properties: {
+                  casaid: { type: 'integer', example: 1 },
+                  idProduto: { type: 'integer', example: 1 },
+                  idDespensa: { type: 'integer', example: 1 },
+                  idCategoria: { type: 'integer', example: 1 },
+                  idLocal: { type: 'integer', example: 1 },
+                  statusProduto: { type: 'string', example: 'Ativo' },
+                  quantidade: { type: 'integer', example: 10 },
+                  validade: { type: 'string', format: 'date-time' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'Produto adicionado.' },
+          '401': { description: 'Token JWT invalido.' },
+          '404': { description: 'Produto ou despensa nao encontrado.' },
+        },
+      },
+    },
+    '/produtos-despensa/{id}': {
+      get: {
+        tags: ['produtos-despensa'],
+        summary: 'Buscar produto da despensa por ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': { description: 'Produto encontrado.' },
+          '401': { description: 'Token JWT invalido.' },
+          '404': { description: 'Produto nao encontrado.' },
+        },
+      },
+      put: {
+        tags: ['produtos-despensa'],
+        summary: 'Atualizar produto da despensa por ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': { description: 'Produto atualizado.' },
+          '401': { description: 'Token JWT invalido.' },
+          '404': { description: 'Produto nao encontrado.' },
+        },
+      },
+      delete: {
+        tags: ['produtos-despensa'],
+        summary: 'Excluir produto da despensa por ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': { description: 'Produto excluido.' },
+          '401': { description: 'Token JWT invalido.' },
+          '404': { description: 'Produto nao encontrado.' },
+        },
+      },
+    },
+    '/produtos-despensa/despensa/{idDespensa}': {
+      get: {
+        tags: ['produtos-despensa'],
+        summary: 'Listar produtos por despensa',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'idDespensa',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': { description: 'Lista retornada com sucesso.' },
+          '401': { description: 'Token JWT invalido.' },
+          '404': { description: 'Despensa nao encontrada.' },
         },
       },
     },

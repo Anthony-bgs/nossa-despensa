@@ -19,11 +19,11 @@ export class ProdutoDespensaService {
       .maybeSingle();
 
     if (despensaError) {
-      throw despensaError;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     if (!despensa) {
-      throw new NotFoundException('Despensa não encontrada para este usuário');
+      throw new NotFoundException(PadraoMensagem.ERRO_NAO_ENCONTRADO);
     }
 
     const { data, error } = await supabase
@@ -55,7 +55,7 @@ export class ProdutoDespensaService {
       .order('id', { ascending: true });
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return (data ?? []).map((item) => this.mapProdutoDespensa(item));
@@ -68,10 +68,12 @@ export class ProdutoDespensaService {
       .eq('id', id)
       .single();
 
-    if (error || !data) {
+    if (error) {
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
+    }
+    if (!data) {
       return null;
     }
-
     return this.mapProdutoDespensa(data);
   }
 
@@ -82,7 +84,7 @@ export class ProdutoDespensaService {
       .eq('id_despensa', idDespensa);
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return (data ?? []).map((item) => this.mapProdutoDespensa(item));
@@ -111,7 +113,7 @@ export class ProdutoDespensaService {
       .single();
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return this.mapProdutoDespensa(data);
@@ -126,7 +128,7 @@ export class ProdutoDespensaService {
       .maybeSingle();
 
     if (buscaError) {
-      throw buscaError;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     if (!item) {
@@ -139,7 +141,7 @@ export class ProdutoDespensaService {
       .eq('id', id);
 
     if (remocaoError) {
-      throw remocaoError;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
   }
 

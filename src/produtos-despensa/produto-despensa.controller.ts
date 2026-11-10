@@ -39,15 +39,6 @@ export class ProdutoDespensaController {
       throw error;
     }
   }
-  @Get ("confirmar-usuario/:id")
-  async confirmarUsuario(@Param('id', ParseIntPipe) id: number, @Request() req: any): Promise<any> {
-    try {
-    return { usuarioId: req?.usuario?.sub };
-    } catch (error) {
-      throw error;
-    }
-  }
-
   @Get(':id')
   async buscarPorId(
     @Param('id', ParseIntPipe) id: number,

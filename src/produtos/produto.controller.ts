@@ -16,13 +16,8 @@ export class ProdutoController {
   @HttpCode(201)
   @Post('/')
   async novoProduto(@Body() dados: NovoProdutoDTO): Promise<string> {
-    try {
       return await this.produtoService.novoProduto(dados);
-    } catch (error: any) {
-      Logger.error('Erro ao criar produto:', error);
-      throw error;
     }
-  }
 
   @Get('/todos')
   async buscarTodosProdutos(@Query() query?: any): Promise<ListaDeProdutosInterface> {

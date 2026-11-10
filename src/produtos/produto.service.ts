@@ -5,6 +5,7 @@ import { PaginacaoDTO } from '../Helper/paginacaodto';
 import { TAMANHO_PAGINA_PADRAO } from '../Helper/constantes';
 import { supabase } from '../utils/supabase';
 import { Grandeza } from '../Helper/enum';
+import { PadraoMensagem } from '../utils/padraomensagem';
 
 @Injectable()
 export class ProdutoService {
@@ -27,7 +28,7 @@ export class ProdutoService {
       if (error.code === '23505') {
         throw new ConflictException("codigo de barras já existe");
       }
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return String(data.id);
@@ -36,7 +37,6 @@ export class ProdutoService {
   async buscarTodosProdutos(filtro?: Partial<FiltroDTO>, paginacao?: PaginacaoDTO): Promise<ListaDeProdutosInterface> {
     const { codigoBarras, nome, marca } = filtro ?? {};
     const { limite, pule } = this.configurarPaginacao(paginacao);
-
     let query = supabase
       .from('produtos')
       .select('*', { count: 'exact' });
@@ -50,20 +50,15 @@ export class ProdutoService {
         query = query.ilike('marca', `%${marca}%`);
       }
     }
-
-
-
     const { data, error, count } = await query
       .order('id', { ascending: true })
       .range(pule, pule + limite - 1);
-
-    if (error) {
+      if(error) {
       if (error.code === 'PGRST103') {
         throw new BadRequestException('Parâmetros de paginação inválidos');
       }
-      throw error;
-    }
-
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO); 
+  }
     const produtos = (data ?? []).map((produto) => this.mapProduto(produto));
 
     return {
@@ -74,15 +69,13 @@ export class ProdutoService {
       },
     };
   }
-
   async buscarProdutoPorId(id: number): Promise<Produto | null> {
     const { data, error } = await supabase
       .from('produtos')
       .select('*')
       .eq('id', id)
       .single();
-
-    if (error || !data) {
+     if (error || !data) {
       return null;
     }
 
@@ -108,7 +101,7 @@ export class ProdutoService {
       .single();
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return data ? this.mapProduto(data) : null;
@@ -123,7 +116,7 @@ export class ProdutoService {
       .single();
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return data ? this.mapProduto(data) : null;
