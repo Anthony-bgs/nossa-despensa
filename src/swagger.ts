@@ -2,6 +2,8 @@ import { INestApplication } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import type { OpenAPIObject } from '@nestjs/swagger';
 import { PadraoMensagem } from './utils/padraomensagem';
+import { Grandeza } from './Helper/enum';
+import { Status } from './lotes/lote.interface';
 
 export const swaggerDocument: OpenAPIObject = {
   openapi: '3.0.0',
@@ -10,6 +12,36 @@ export const swaggerDocument: OpenAPIObject = {
     description: 'Documentação da API do sistema Nossa Despensa',
     version: '1.0.0',
   },
+  tags: [
+    {
+      name: 'autorização',
+      description: 'Autenticação e validação de acesso.',
+    },
+    {
+      name: 'casa',
+      description: 'Operações relacionadas às casas.',
+    },
+    {
+      name: 'fluxo completo',
+      description: 'Fluxos completos de criação de recursos.',
+    },
+    {
+      name: 'categoria',
+      description: 'Operações relacionadas às categorias.',
+    },
+    {
+      name: 'despensa',
+      description: 'Operações relacionadas às despensas.',
+    },
+    {
+      name: 'locais-armazenamento',
+      description: 'Operações relacionadas aos locais de armazenamento.',
+    },
+    {
+      name: 'lote',
+      description: 'Operações relacionadas aos lotes e estoque.',
+    },
+  ],
   components: {
     securitySchemes: {
       bearerAuth: {
@@ -318,7 +350,7 @@ export const swaggerDocument: OpenAPIObject = {
                   statusCode: 201,
                   timestamp: '2026-09-25T12:00:00.000Z',
                   path: '/casa/',
-                  data: 1,
+                  data: PadraoMensagem.SUCESSO_OPERACAO,
                 },
               },
             },
@@ -347,7 +379,7 @@ export const swaggerDocument: OpenAPIObject = {
                   statusCode: 401,
                   timestamp: '2026-09-25T12:00:00.000Z',
                   path: '/casa/',
-                  message: 'Acesso negado',
+                  message: PadraoMensagem.ERRO_ACESSO_NEGADO,
                 },
               },
             },
@@ -360,6 +392,7 @@ export const swaggerDocument: OpenAPIObject = {
                   statusCode: 500,
                   timestamp: '2026-09-25T12:00:00.000Z',
                   path: '/casa/',
+                  message: PadraoMensagem.ERRO_INTERNO,
                 },
               },
             },
@@ -419,6 +452,7 @@ export const swaggerDocument: OpenAPIObject = {
                   statusCode: 500,
                   timestamp: '2026-09-25T12:00:00.000Z',
                   path: '/casa/minha-casa',
+                  message: PadraoMensagem.ERRO_INTERNO,
                 },
               },
             },
@@ -473,7 +507,7 @@ export const swaggerDocument: OpenAPIObject = {
                   statusCode: 201,
                   timestamp: '2026-09-25T12:00:00.000Z',
                   path: '/casa/entrar-convite',
-                  data: 'Operação realizada com sucesso',
+                  data: PadraoMensagem.SUCESSO_OPERACAO,
                 },
               },
             },
@@ -545,7 +579,11 @@ export const swaggerDocument: OpenAPIObject = {
                               nome: { type: 'string', example: 'Arroz' },
                               marca: { type: 'string', example: 'Marca' },
                               tamanhoPadrao: { type: 'number', example: 1 },
-                              unidadeMedida: { type: 'string', example: 'kg' },
+                              unidadeMedida: {
+                                type: 'string',
+                                enum: Object.values(Grandeza),
+                                example: Grandeza.KG,
+                              },
                               criadoEm: { type: 'string', format: 'date-time' },
                               atualizadoEm: {
                                 type: 'string',
@@ -589,7 +627,7 @@ export const swaggerDocument: OpenAPIObject = {
                   statusCode: 201,
                   timestamp: '2026-09-25T12:00:00.000Z',
                   path: '/casa/criacao-completa',
-                  data: 'Operacao realizada com sucesso',
+                  data: PadraoMensagem.SUCESSO_OPERACAO,
                 },
               },
             },
@@ -962,7 +1000,7 @@ export const swaggerDocument: OpenAPIObject = {
                   statusCode: 200,
                   timestamp: '2026-09-25T12:00:00.000Z',
                   path: '/categorias/1',
-                  data: 'Operação realizada com sucesso',
+                  data: PadraoMensagem.SUCESSO_OPERACAO,
                 },
               },
             },
@@ -1204,15 +1242,15 @@ export const swaggerDocument: OpenAPIObject = {
               },
             },
           },
-          '404': {
-            description: 'Despensa não encontrada.',
+          '500': {
+            description: 'Erro interno ao buscar a despensa.',
             content: {
               'application/json': {
                 example: {
-                  statusCode: 404,
+                  statusCode: 500,
                   timestamp: '2026-09-25T12:00:00.000Z',
-                  path: '/despensas/999',
-                  message: PadraoMensagem.ERRO_NAO_ENCONTRADO,
+                  path: '/despensas/1',
+                  message: PadraoMensagem.ERRO_INTERNO,
                 },
               },
             },
@@ -1328,7 +1366,7 @@ export const swaggerDocument: OpenAPIObject = {
                   statusCode: 200,
                   timestamp: '2026-09-25T12:00:00.000Z',
                   path: '/despensas/1',
-                  data: 'Operação realizada com sucesso',
+                  data: PadraoMensagem.SUCESSO_OPERACAO,
                 },
               },
             },
@@ -1358,6 +1396,939 @@ export const swaggerDocument: OpenAPIObject = {
                 },
               },
             },
+          },
+        },
+      },
+    },
+    '/locais-armazenamento': {
+      post: {
+        tags: ['locais-armazenamento'],
+        summary: 'Criar um novo local de armazenamento',
+        description: 'Cria um novo local de armazenamento no sistema.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['local', 'idDespensa'],
+                properties: {
+                  local: { type: 'string', example: 'Prateleira 1' },
+                  idDespensa: { type: 'integer', example: 1 },
+                  observacao: {
+                    type: 'string',
+                    nullable: true,
+                    example: 'Local para produtos secos',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Local de armazenamento criado com sucesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 201,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento',
+                  data: {
+                    id: 1,
+                    local: 'Prateleira 1',
+                    idDespensa: 1,
+                    criadoEm: '2026-09-25T12:00:00.000Z',
+                  },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Dados incompletos ou erro interno.',
+            content: {
+              'application/json': {
+                examples: {
+                  dadosIncompletos: {
+                    summary: 'Dados incompletos',
+                    value: {
+                      statusCode: 400,
+                      timestamp: '2026-09-25T12:00:00.000Z',
+                      path: '/locais-armazenamento',
+                      message: PadraoMensagem.ERRO_DADOS_INCOMPLETOS,
+                    },
+                  },
+                  erroInterno: {
+                    summary: 'Erro interno',
+                    value: {
+                      statusCode: 400,
+                      timestamp: '2026-09-25T12:00:00.000Z',
+                      path: '/locais-armazenamento',
+                      message: PadraoMensagem.ERRO_INTERNO,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 401,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento',
+                  message: PadraoMensagem.ERRO_ACESSO_NEGADO,
+                },
+              },
+            },
+          },
+        },
+      },
+      get: {
+        tags: ['locais-armazenamento'],
+        summary: 'Listar locais de armazenamento',
+        description:
+          'Retorna uma lista de todos os locais de armazenamento cadastrados.',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          '200': {
+            description:
+              'Lista de locais de armazenamento retornada com sucesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 200,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento',
+                  data: [
+                    {
+                      id: 1,
+                      local: 'Prateleira 1',
+                      idDespensa: 1,
+                      criadoEm: '2026-09-25T12:00:00.000Z',
+                    },
+                    {
+                      id: 2,
+                      local: 'Prateleira 2',
+                      idDespensa: 1,
+                      criadoEm: '2026-09-25T12:00:00.000Z',
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/locais-armazenamento/{id}': {
+      get: {
+        tags: ['locais-armazenamento'],
+        summary: 'Buscar local de armazenamento por ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Local de armazenamento encontrado com sucesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 200,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento/{id}',
+                  data: {
+                    id: 1,
+                    local: 'Prateleira 1',
+                    idDespensa: 1,
+                    criadoEm: '2026-09-25T12:00:00.000Z',
+                  },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Erro interno.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 400,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento/{id}',
+                  message: PadraoMensagem.ERRO_INTERNO,
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 401,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento/{id}',
+                  message: PadraoMensagem.ERRO_ACESSO_NEGADO,
+                },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: ['locais-armazenamento'],
+        summary: 'Atualizar local de armazenamento por ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  local: { type: 'string', example: 'Prateleira 1 Atualizada' },
+                  idDespensa: { type: 'integer', example: 1 },
+                  descricao: {
+                    type: 'string',
+                    example: 'Local atualizado para produtos secos',
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Local de armazenamento atualizado com sucesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 200,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento/{id}',
+                  data: {
+                    id: 1,
+                    local: 'Prateleira 1 Atualizada',
+                    idDespensa: 1,
+                    criadoEm: '2026-09-25T12:00:00.000Z',
+                  },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Erro interno.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 400,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento/{id}',
+                  message: PadraoMensagem.ERRO_INTERNO,
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 401,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento/{id}',
+                  message: PadraoMensagem.ERRO_ACESSO_NEGADO,
+                },
+              },
+            },
+          },
+          '404': {
+            description: 'Local de armazenamento não encontrado.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 404,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento/{id}',
+                  message: PadraoMensagem.ERRO_NAO_ENCONTRADO,
+                },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        tags: ['locais-armazenamento'],
+        summary: 'Excluir local de armazenamento por ID',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Local de armazenamento excluído com sucesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 200,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento/{id}',
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Erro interno.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 400,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento/{id}',
+                  message: PadraoMensagem.ERRO_INTERNO,
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 401,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento/{id}',
+                  message: PadraoMensagem.ERRO_ACESSO_NEGADO,
+                },
+              },
+            },
+          },
+          '404': {
+            description: 'Local de armazenamento não encontrado.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 404,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/locais-armazenamento/{id}',
+                  message: PadraoMensagem.ERRO_NAO_ENCONTRADO,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/lotes/adicionar': {
+      post: {
+        tags: ['lote'],
+        summary: 'Criar um novo lote',
+        description: 'Cria um novo lote no sistema.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['idProdutoDespensa', 'quantidade', 'validade'],
+                properties: {
+                  idProdutoDespensa: { type: 'integer', example: 1 },
+                  quantidade: { type: 'integer', example: 10 },
+                  validade: {
+                    type: 'string',
+                    format: 'date-time',
+                    example: '2026-12-31T00:00:00.000Z',
+                  },
+                  statusLote: {
+                    type: 'string',
+                    enum: Object.values(Status),
+                    example: Status.ABERTO,
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Lote criado com sucesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 201,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/adicionar',
+                  data: {
+                    id: 1,
+                    id_ass_produto_despensa: 1,
+                    quantidade: 10,
+                    validade_produto: '31/12/2026',
+                    status_lote: 'ABERTO',
+                    status_validade: 'VALIDO',
+                    criado_em: '2026-09-25T12:00:00.000Z',
+                  },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Dados inválidos.',
+            content: {
+              'application/json': {
+                examples: {
+                  dadosInvalidos: {
+                    summary: 'Dados inválidos',
+                    value: {
+                      statusCode: 400,
+                      timestamp: '2026-09-25T12:00:00.000Z',
+                      path: '/lotes/adicionar',
+                      message: PadraoMensagem.ERRO_DADOS_INVALIDOS,
+                    },
+                  },
+                  dadosIncompletos: {
+                    summary: 'Dados incompletos',
+                    value: {
+                      statusCode: 400,
+                      timestamp: '2026-09-25T12:00:00.000Z',
+                      path: '/lotes/adicionar',
+                      message: PadraoMensagem.ERRO_DADOS_INCOMPLETOS,
+                    },
+                  },
+                  erroInterno: {
+                    summary: 'Erro interno',
+                    value: {
+                      statusCode: 400,
+                      timestamp: '2026-09-25T12:00:00.000Z',
+                      path: '/lotes/adicionar',
+                      message: PadraoMensagem.ERRO_INTERNO,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 401,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/adicionar',
+                  message: PadraoMensagem.ERRO_ACESSO_NEGADO,
+                },
+              },
+            },
+          },
+          '404': {
+            description: 'Produto da despensa ou usuário não encontrado.',
+            content: {
+              'application/json': {
+                examples: {
+                  usuarioNaoEncontrado: {
+                    summary: 'Usuário não encontrado',
+                    value: {
+                      statusCode: 404,
+                      timestamp: '2026-09-25T12:00:00.000Z',
+                      path: '/lotes/adicionar',
+                      message: PadraoMensagem.ERRO_USUARIO_NAO_ENCONTRADO,
+                    },
+                  },
+                  produtoNaoEncontrado: {
+                    summary: 'Produto da despensa não encontrado',
+                    value: {
+                      statusCode: 404,
+                      timestamp: '2026-09-25T12:00:00.000Z',
+                      path: '/lotes/adicionar',
+                      message: PadraoMensagem.ERRO_NAO_ENCONTRADO,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/lotes/deletarlotesproduto/{idProdutoDespensa}': {
+      delete: {
+        tags: ['lote'],
+        summary: 'Excluir lotes de um produto da despensa',
+        description:
+          'Exclui todos os lotes associados ao produto da despensa informado.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'idProdutoDespensa',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Lotes excluídos com sucesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 200,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/deletarlotesproduto/1',
+                  data: PadraoMensagem.SUCESSO_OPERACAO,
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 401,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/deletarlotesproduto/1',
+                  message: PadraoMensagem.ERRO_ACESSO_NEGADO,
+                },
+              },
+            },
+          },
+          '404': {
+            description: 'Produto da despensa não encontrado ou sem acesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 404,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/deletarlotesproduto/1',
+                  message: PadraoMensagem.ERRO_NAO_ENCONTRADO,
+                },
+              },
+            },
+          },
+          '500': {
+            description: 'Erro interno do servidor.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 500,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/deletarlotesproduto/1',
+                  message: PadraoMensagem.ERRO_INTERNO,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/lotes/produto-despensa/{idProdutoDespensa}': {
+      get: {
+        tags: ['lote'],
+        summary: 'Listar lotes por produto da despensa',
+        description:
+          'Retorna os lotes associados ao produto da despensa informado.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'idProdutoDespensa',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Lotes encontrados com sucesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 200,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/produto-despensa/1',
+                  data: [
+                    {
+                      id: 1,
+                      id_ass_produto_despensa: 1,
+                      quantidade: 10,
+                      validade_produto: '31/12/2026',
+                      status_lote: 'ABERTO',
+                      status_validade: 'VALIDO',
+                      criado_em: '2026-09-25T12:00:00.000Z',
+                    },
+                  ],
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 401,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/produto-despensa/1',
+                  message: PadraoMensagem.ERRO_ACESSO_NEGADO,
+                },
+              },
+            },
+          },
+          '500': {
+            description: 'Erro interno do servidor.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 500,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/produto-despensa/1',
+                  message: PadraoMensagem.ERRO_INTERNO,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/lotes/estoque-total/{idProdutoDespensa}': {
+      get: {
+        tags: ['lote'],
+        summary: 'Calcular estoque total dos lotes',
+        description:
+          'Calcula a quantidade total dos lotes do produto da despensa informado.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'idProdutoDespensa',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Estoque total calculado com sucesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 200,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/estoque-total/1',
+                  data: 25,
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 401,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/estoque-total/1',
+                  message: PadraoMensagem.ERRO_ACESSO_NEGADO,
+                },
+              },
+            },
+          },
+          '500': {
+            description: 'Erro interno do servidor.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 500,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/estoque-total/1',
+                  message: PadraoMensagem.ERRO_INTERNO,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/lotes/{id}': {
+      get: {
+        tags: ['lote'],
+        summary: 'Buscar lote por ID',
+        description: 'Retorna um lote pelo seu identificador.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Lote encontrado.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 200,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/{id}',
+                  data: {
+                    id: 1,
+                    id_ass_produto_despensa: 1,
+                    quantidade: 10,
+                    validade_produto: '31/12/2026',
+                    status_lote: 'ABERTO',
+                    status_validade: 'VALIDO',
+                    criado_em: '2026-09-25T12:00:00.000Z',
+                  },
+                },
+              },
+            },
+          },
+          '500': {
+            description: 'Erro interno ao buscar o lote.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 500,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/{id}',
+                  message: PadraoMensagem.ERRO_INTERNO,
+                },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: ['lote'],
+        summary: 'Atualizar lote por ID',
+        description:
+          'Atualiza a quantidade, validade ou status do lote informado.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'integer' },
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  quantidade: { type: 'integer', example: 8 },
+                  validade: {
+                    type: 'string',
+                    format: 'date-time',
+                    example: '2026-12-31T00:00:00.000Z',
+                  },
+                  statusLote: {
+                    type: 'string',
+                    enum: Object.values(Status),
+                    example: Status.FECHADO,
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Lote atualizado com sucesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 200,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/1',
+                  data: {
+                    id: 1,
+                    id_ass_produto_despensa: 1,
+                    quantidade: 8,
+                    validade_produto: '31/12/2026',
+                    status_lote: 'FECHADO',
+                    status_validade: 'VALIDO',
+                    criado_em: '2026-09-25T12:00:00.000Z',
+                  },
+                },
+              },
+            },
+          },
+          '400': {
+            description: 'Erro interno ao atualizar o lote.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 400,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/1',
+                  message: PadraoMensagem.ERRO_INTERNO,
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 401,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/1',
+                  message: PadraoMensagem.ERRO_ACESSO_NEGADO,
+                },
+              },
+            },
+          },
+          '404': {
+            description: 'Lote não encontrado.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 404,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/999',
+                  message: PadraoMensagem.ERRO_NAO_ENCONTRADO,
+                },
+              },
+            },
+          },
+        },
+      },
+      delete: {
+        tags: ['lote'],
+        summary: 'Excluir lote',
+        description:
+          'Exclui um lote usando o ID do lote e o ID do produto da despensa no corpo da requisição.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['idProdutoDespensa', 'idLote'],
+                properties: {
+                  idProdutoDespensa: { type: 'integer', example: 1 },
+                  idLote: { type: 'integer', example: 1 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': {
+            description: 'Lote excluído com sucesso.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 200,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/deletar',
+                  data: PadraoMensagem.SUCESSO_OPERACAO,
+                },
+              },
+            },
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 401,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/deletar',
+                  message: PadraoMensagem.ERRO_ACESSO_NEGADO,
+                },
+              },
+            },
+          },
+          '404': {
+            description: 'Lote não encontrado.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 404,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/deletar',
+                  message: PadraoMensagem.ERRO_NAO_ENCONTRADO,
+                },
+              },
+            },
+          },
+          '500': {
+            description: 'Erro interno do servidor.',
+            content: {
+              'application/json': {
+                example: {
+                  statusCode: 500,
+                  timestamp: '2026-09-25T12:00:00.000Z',
+                  path: '/lotes/deletar',
+                  message: PadraoMensagem.ERRO_INTERNO,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/membros-casa/adicionar-membro': {
+      post: {
+        tags: ['membros-casa'],
+        summary: 'Adicionar um novo membro à casa',
+        description: 'Adiciona um novo membro à casa do usuário autenticado.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['casaId', 'codigo', 'usuarioId'],
+                properties: {
+                  casaId: { type: 'integer', example: 1 },
+                  codigo: { type: 'string', example: '123456' },
+                  usuarioId: { type: 'integer', example: 2 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          '201': {
+            description: 'Membro adicionado com sucesso.',
+          },
+          '401': {
+            description: 'Token JWT inválido ou não fornecido.',
+          },
+          '500': {
+            description: 'Erro interno do servidor.',
           },
         },
       },

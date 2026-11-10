@@ -24,9 +24,12 @@ export class LoteController {
   constructor(private readonly loteService: LoteService) {}
 
   @Post('/adicionar')
-  
   async adicionarLote(@Body() dados: AdicionarLoteDTO,@Request() req): Promise<Lote> {
+    try {
     return await this.loteService.adicionarLote(dados, req?.usuario?.sub);
+    } catch (error) {
+      throw error;
+    }
   }
   @Delete('deletarlotesproduto/:idProdutoDespensa')
   async deletarLotePorPoduto(@Request() req: any, @Param('idProdutoDespensa', ParseIntPipe) idProdutoDespensa: number): Promise<void> {

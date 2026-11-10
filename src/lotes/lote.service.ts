@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Lote, LoteSchema, Status, StatusValidade } from './lote.interface';
 import { AdicionarLoteDTO, AtualizarLoteDTO, DeletarLoteDTO } from './lote.dto';
 import { supabase } from '../utils/supabase';
 import { ProdutoDespensaService } from '../produtos-despensa/produto-despensa.service';
+import { PadraoMensagem } from '../utils/padraomensagem';
 
 @Injectable()
 export class LoteService {
@@ -11,11 +12,14 @@ export class LoteService {
   async adicionarLote(dados: AdicionarLoteDTO, userId: number): Promise<Lote> {
     const usuarioconfirmado = await this.produtoDespensaService.confirmarUsuario(dados.idProdutoDespensa, userId);
     if (!usuarioconfirmado ) {
-      throw new NotFoundException('Produto da despensa não encontrado para este usuário');
+      throw new NotFoundException(PadraoMensagem.ERRO_USUARIO_NAO_ENCONTRADO);
+    }
+    if (dados === null || dados === undefined) {
+      throw new BadRequestException(PadraoMensagem.ERRO_DADOS_INCOMPLETOS);
     }
     const produtoDespensa = await this.buscarProdutoDespensaPorId(dados.idProdutoDespensa);
     if (!produtoDespensa) {
-      throw new NotFoundException('Produto da despensa não encontrado');
+      throw new NotFoundException(PadraoMensagem.ERRO_NAO_ENCONTRADO);
     }
 
     const payload = {
@@ -34,7 +38,7 @@ export class LoteService {
       .single();
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     const loteSalvo = this.mapLote(data);
@@ -44,10 +48,8 @@ export class LoteService {
   async atualizarLote(id: number, dados: AtualizarLoteDTO): Promise<Lote> {
     const loteExistente = await this.buscarLotePorIdInterno(id);
     if (!loteExistente) {
-      throw new NotFoundException('Lote não encontrado');
+      throw new NotFoundException(PadraoMensagem.ERRO_NAO_ENCONTRADO);
     }
-
-
     const payload = {
       quantidade: dados.quantidade ?? loteExistente.quantidade,
       validade_produto: dados.validade ? new Date(dados.validade).toISOString() : loteExistente.validade_produto ?? null,
@@ -64,7 +66,7 @@ export class LoteService {
       .single();
 
     if (error) {
-      throw error;
+      throw  new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return this.mapLote(data);
@@ -74,7 +76,7 @@ export class LoteService {
     await this.produtoDespensaService.confirmarUsuario(data.idProdutoDespensa, userId);
     const lote = await this.buscarLotePorId(data.idLote);
     if (!lote) {
-      throw new NotFoundException('Lote não encontrado');
+      throw new NotFoundException(PadraoMensagem.ERRO_NAO_ENCONTRADO);
     }
 
     const { error } = await supabase
@@ -83,7 +85,7 @@ export class LoteService {
       .eq('id', data.idLote);
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     await this.atualizarEstoqueProdutoDespensa(lote.id_ass_produto_despensa, -lote.quantidade);
@@ -100,7 +102,7 @@ export class LoteService {
       .eq('id', idProdutoDespensa);
 
     if (itensError) {
-      throw itensError;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     const idsProdutoDespensa = (itensProdutoDespensa ?? []).map((item) => item.id);
@@ -115,7 +117,7 @@ export class LoteService {
       .in('id_ass_produto_despensa', idsProdutoDespensa);
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
   }
 

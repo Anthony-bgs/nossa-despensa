@@ -1,14 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { LocalArmazenamento } from './local-armazenamento.interface';
 import {
   CriarLocalArmazenamentoDTO,
   AtualizarLocalArmazenamentoDTO,
 } from './local-armazenamento.dto';
 import { supabase } from '../utils/supabase';
+import { PadraoMensagem } from '../utils/padraomensagem';
 
 @Injectable()
 export class LocalArmazenamentoService {
   async criar(dados: CriarLocalArmazenamentoDTO): Promise<LocalArmazenamento> {
+    if (!dados.local || !dados.idDespensa) {
+      throw new BadRequestException(PadraoMensagem.ERRO_DADOS_INCOMPLETOS);
+    }                                                                                                                                                                                               
     const { data, error } = await supabase
       .from('locais_armazenamento')
       .insert({
@@ -20,7 +24,7 @@ export class LocalArmazenamentoService {
       .single();
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return this.mapLocal(data);
@@ -33,7 +37,7 @@ export class LocalArmazenamentoService {
       .order('local', { ascending: true });
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return (data ?? []).map((item) => this.mapLocal(item));
@@ -46,8 +50,11 @@ export class LocalArmazenamentoService {
       .eq('id', id)
       .single();
 
-    if (error || !data) {
+    if (!data) {
       return null;
+    }
+    if (error) {
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return this.mapLocal(data);
@@ -59,9 +66,8 @@ export class LocalArmazenamentoService {
   ): Promise<LocalArmazenamento> {
     const localExistente = await this.buscarPorId(id);
     if (!localExistente) {
-      throw new NotFoundException('Local de armazenamento não encontrado');
+      throw new NotFoundException(PadraoMensagem.ERRO_NAO_ENCONTRADO);
     }
-
     const { data, error } = await supabase
       .from('locais_armazenamento_despensa')
       .update({
@@ -74,7 +80,7 @@ export class LocalArmazenamentoService {
       .single();
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
 
     return this.mapLocal(data);
@@ -83,7 +89,7 @@ export class LocalArmazenamentoService {
   async remover(id: number): Promise<void> {
     const local = await this.buscarPorId(id);
     if (!local) {
-      throw new NotFoundException('Local de armazenamento não encontrado');
+      throw new NotFoundException(PadraoMensagem.ERRO_NAO_ENCONTRADO);
     }
 
     const { error } = await supabase
@@ -92,7 +98,7 @@ export class LocalArmazenamentoService {
       .eq('id', id);
 
     if (error) {
-      throw error;
+      throw new BadRequestException(PadraoMensagem.ERRO_INTERNO);
     }
   }
 
