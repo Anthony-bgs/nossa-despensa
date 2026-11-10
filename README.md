@@ -57,6 +57,24 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## WhatsApp
+
+Para enviar códigos de convite pelo WhatsApp, configure no ambiente da aplicação:
+
+```env
+WHATSAPP_ACCESS_TOKEN=seu-token-da-meta
+WHATSAPP_PHONE_NUMBER_ID=id-do-numero-do-whatsapp
+WHATSAPP_API_VERSION=v25.0
+WHATSAPP_INVITE_TEMPLATE_NAME=nome-do-template-aprovado
+WHATSAPP_TEMPLATE_LANGUAGE=en_US
+```
+
+O template informado em `WHATSAPP_INVITE_TEMPLATE_NAME` precisa estar aprovado
+no WhatsApp Business Manager e possuir um parâmetro de texto no corpo para o
+código do convite. O telefone deve ser enviado com código do país; a aplicação
+remove espaços, parênteses, hífens e o sinal de `+` antes de chamar a API da
+Meta.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
